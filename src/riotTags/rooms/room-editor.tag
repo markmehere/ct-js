@@ -133,7 +133,7 @@ room-editor.panel.view
             )
                 svg.feather
                     use(xlink:href="data/icons.svg#sort-vertical")
-            span(if="{window.innerWidth - sidebarWidth > 940}") {isMac ? voc.hotkeysNotice.replace('Ctrl', 'Ctrl+Alt') : voc.hotkeysNotice}
+            span(if="{window.innerWidth - sidebarWidth > 940}") {isMac ? voc.hotkeysNotice.replace('Ctrl', 'Ctrl+Alt').replace('Strg', 'Strg+Alt') : voc.hotkeysNotice}
         .zoom.flexrow
             b(if="{window.innerWidth - sidebarWidth > 980}") {vocGlob.zoom}:
             .spacer
