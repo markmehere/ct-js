@@ -37,10 +37,12 @@
         }
 
         ct.pixiApp.renderer.resize(canvasWidth, canvasHeight);
-        if (mode !== 'scaleFill' && mode !== 'scaleFit') {
-            ct.pixiApp.stage.scale.x = ct.pixiApp.stage.scale.y = pixelScaleModifier;
-        } else {
-            ct.pixiApp.stage.scale.x = ct.pixiApp.stage.scale.y = pixelScaleModifier * k;
+        if (!ct.room.template.extends || !ct.room.template.extends.isTilemap) {
+            if (mode !== 'scaleFill' && mode !== 'scaleFit') {
+                ct.pixiApp.stage.scale.x = ct.pixiApp.stage.scale.y = pixelScaleModifier;
+            } else {
+                ct.pixiApp.stage.scale.x = ct.pixiApp.stage.scale.y = pixelScaleModifier * k;
+            }
         }
         canv.style.width = Math.ceil(canvasWidth / pixelScaleModifier) + 'px';
         canv.style.height = Math.ceil(canvasHeight / pixelScaleModifier) + 'px';

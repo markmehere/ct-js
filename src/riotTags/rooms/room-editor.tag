@@ -17,7 +17,7 @@ room-editor.panel.view
                         svg.feather
                             use(xlink:href="data/icons.svg#type")
                         span(if="{sidebarWidth > 500}") {voc.copies}
-                    li(onclick="{changeTab('roombackgrounds')}" title="{voc.backgrounds}" class="{active: tab === 'roombackgrounds'}")
+                    li(if="{!this.room.extends.isTilemap}" onclick="{changeTab('roombackgrounds')}" title="{voc.backgrounds}" class="{active: tab === 'roombackgrounds'}")
                         svg.feather
                             use(xlink:href="data/icons.svg#image")
                         span(if="{sidebarWidth > 500}") {voc.backgrounds}
@@ -34,7 +34,7 @@ room-editor.panel.view
                     room-backgrounds-editor(show="{tab === 'roombackgrounds'}" room="{room}")
                     room-tile-editor(show="{tab === 'roomtiles'}" room="{room}")
                     .pad.panel(show="{tab === 'properties'}")
-                        fieldset
+                        fieldset(if="{!room.extends.isTilemap}")
                             .fifty.npt.npb.npl
                                 b {voc.width}
                                 br
@@ -44,7 +44,17 @@ room-editor.panel.view
                                 br
                                 input.wide(type="number" value="{room.height}" onchange="{wireAndRedraw('this.room.height')}")
                             .clear
-                        fieldset
+                        fieldset(if="{room.extends.isTilemap}")
+                            .fifty.npt.npb.npl
+                                b {voc.mapWidth}
+                                br
+                                input.wide(type="number" value="{room.width / 50}" onchange="{wireAndRedraw('this.room.mapWidth')}")
+                            .fifty.npt.npb.npr
+                                b {voc.mapHeight}
+                                br
+                                input.wide(type="number" value="{room.height / 50}" onchange="{wireAndRedraw('this.room.mapHeight')}")
+                            .clear
+                        fieldset(if="{!room.extends.isTilemap}")
                             label.checkbox
                                 input(type="checkbox" checked="{room.restrictCamera}" onchange="{wireAndRedraw('this.room.restrictCamera')}")
                                 span {voc.restrictCamera}
@@ -93,10 +103,10 @@ room-editor.panel.view
                         fieldset
                             extensions-editor(entity="{room.extends}" type="room" wide="aye" compact="sure")
 
-                        fieldset
+                        fieldset(if="{room.extends.isTilemap || global.currentProject.libs.traviso}" disabled="{room.tiles.length !== 1 || room.extends.isUi || room.copies.length || room.tiles[0].tiles.length}")
                             label.block.checkbox
-                                input(type="checkbox" checked="{room.extends.isUi}" onchange="{wire('this.room.extends.isUi')}")
-                                b {voc.isUi}
+                                input(type="checkbox" disabled="{room.tiles.length !== 1 || room.extends.isUi || room.copies.length || room.tiles[0].tiles.length}" checked="{room.extends.isTilemap}" onchange="{toggleTilemap}")
+                                b {voc.isTilemap}
 
         .done.nogrow
             button.wide#roomviewdone(onclick="{roomSave}")
@@ -140,20 +150,20 @@ room-editor.panel.view
             b {Math.round(zoomFactor * 100)}%
             .spacer
             zoom-slider(onchanged="{setZoom}" ref="zoomslider" value="{zoomFactor}")
-        .grid
+        .grid(if="{!room.extends.isTilemap}")
             button#roomgrid(onclick="{roomToggleGrid}" class="{active: room.gridX > 0}")
                 span {voc[room.gridX > 0? 'gridoff' : 'grid']}
         .center
             button#roomcenter(onclick="{roomToCenter}") {voc.tocenter}
             span.aMouseCoord(show="{window.innerWidth - sidebarWidth > 470}" ref="mousecoords") ({mouseX}:{mouseY})
         room-copy-properties(
-            if="{this.selectedCopies && this.selectedCopies.length === 1}"
-            copy="{this.selectedCopies[0]}"
+            if="{selectedCopies && selectedCopies.length === 1 && !room.extends.isTilemap}"
+            copy="{selectedCopies[0]}"
             onchange="{refreshRoomCanvas}" oninput="{refreshRoomCanvas}"
         )
     room-events-editor(if="{editingCode}" room="{room}")
     context-menu(menu="{roomCanvasCopiesMenu}" ref="roomCanvasCopiesMenu")
-    context-menu(menu="{roomCanvasMenu}" ref="roomCanvasMenu")
+    context-menu(menu="{room.extends.isTilemap ? roomTilemapCanvasMenu : roomCanvasMenu}" ref="roomCanvasMenu")
     context-menu(menu="{roomCanvasTileMenu}" ref="roomCanvasTileMenu")
     context-menu(menu="{roomCanvasTilesMenu}" ref="roomCanvasTilesMenu")
     script.
@@ -207,7 +217,15 @@ room-editor.panel.view
         this.mixin(window.roomCopyTools);
         this.mixin(window.roomTileTools);
         this.wireAndRedraw = way => e => {
-            this.wire(way)(e);
+            if (way.indexOf('mapWidth') > -1) {
+                e.target.value = parseInt(e.target.value, 10) * 50;
+                this.wire(way.replace('mapWidth', 'width'))(e);
+            } else if (way.indexOf('mapHeight') > -1) {
+                e.target.value = parseInt(e.target.value, 10) * 50;
+                this.wire(way.replace('mapHeight', 'height'))(e);
+            } else {
+                this.wire(way)(e);
+            }
             this.refreshRoomCanvas();
         };
 
@@ -220,8 +238,8 @@ room-editor.panel.view
         this.roomx = this.room.width / 2;
         this.roomy = this.room.height / 2;
         this.zoomFactor = 1;
-        this.room.gridX = this.room.gridX || this.room.grid || 64;
-        this.room.gridY = this.room.gridY || this.room.grid || 64;
+        this.room.gridX = (this.room.extends.isTilemap) ? 50 : this.room.gridX || this.room.grid || 64;
+        this.room.gridY = (this.room.extends.isTilemap) ? 50 : this.room.gridY || this.room.grid || 64;
         this.dragging = false;
         this.tab = 'roomcopies';
 
@@ -298,6 +316,20 @@ room-editor.panel.view
                 0.5 / this.zoomFactor, 0.5 / this.zoomFactor,
                 this.room.gridX, this.room.gridY
             );
+        };
+        this.toggleTilemap = () => {
+            if (this.room.extends.isTilemap) {
+                this.room.gridX = 64;
+                this.room.gridY = 64;
+                this.room.extends.isTilemap = false;
+            } else {
+                this.room.gridX = 50;
+                this.room.gridY = 50;
+                this.room.extends.isTilemap = true;
+            }
+            this.redrawGrid();
+            this.refreshRoomCanvas();
+            this.update();
         };
         this.roomToggleGrid = () => {
             if (this.room.gridX === 0) {
@@ -456,9 +488,9 @@ room-editor.panel.view
         };
 
         this.onCanvasContextMenu = e => {
-            if (this.isMac && e.altKey)  {
+            if (this.isMac && e.altKey) {
                 e.preventDefault();
-                return true; 
+                return true;
             }
             this.dragging = false;
             this.mouseDown = false;
@@ -481,19 +513,20 @@ room-editor.panel.view
 
         // Shifts all the copies in a room at once.
         this.roomShift = () => {
+            const {isTilemap} = this.room.extends;
             window.alertify.confirm(`
                 ${window.languageJSON.roomview.shifttext}
                 <label class="block">X:
-                    <input id="roomshiftx" type="number" value="${this.room.gridX}" />
+                    <input id="roomshiftx" type="number" value="${isTilemap ? 1 : this.room.gridX}" />
                 </label>
                 <label class="block">Y:
-                    <input id="roomshifty" type="number" value="${this.room.gridY}" />
+                    <input id="roomshifty" type="number" value="${isTilemap ? 1 : this.room.gridY}" />
                 </label>
             `)
             .then(e => {
                 if (e.buttonClicked === 'ok') {
-                    var dx = Number(document.getElementById('roomshiftx').value) || 0,
-                        dy = Number(document.getElementById('roomshifty').value) || 0;
+                    var dx = Number(document.getElementById('roomshiftx').value) * (isTilemap ? 50 : 1) || 0,
+                        dy = Number(document.getElementById('roomshifty').value) * (isTilemap ? 50 : 1) || 0;
                     for (const copy of this.room.copies) {
                         copy.x += dx;
                         copy.y += dy;
@@ -535,22 +568,22 @@ room-editor.panel.view
             return true;
         };
 
-        this.sortHorizontally = () => {
+        this.sortHorizontally = (e) => {
             if (this.tab === 'roomcopies') {
-                this.room.copies.sort((a, b) => a.x - b.x);
+                this.room.copies.sort((a, b) => (a.x - b.x) * (e.altKey ? -1 : 1));
             } else {
                 // tiles
-                this.currentTileLayer.tiles.sort((a, b) => a.x - b.x);
+                this.currentTileLayer.tiles.sort((a, b) => (a.x - b.x) * (e.altKey ? -1 : 1));
             }
             this.resortRoom();
             this.refreshRoomCanvas();
         };
-        this.sortVertically = () => {
+        this.sortVertically = (e) => {
             if (this.tab === 'roomcopies') {
-                this.room.copies.sort((a, b) => a.y - b.y);
+                this.room.copies.sort((a, b) => (a.y - b.y) * (e.altKey ? -1 : 1));
             } else {
                 // tiles
-                this.currentTileLayer.tiles.sort((a, b) => a.y - b.y);
+                this.currentTileLayer.tiles.sort((a, b) => (a.y - b.y) * (e.altKey ? -1 : 1));
             }
             this.resortRoom();
             this.refreshRoomCanvas();
@@ -610,22 +643,40 @@ room-editor.panel.view
                 if (this.stack[i].tiles) { // a tile layer
                     const layer = this.stack[i];
                     if (!layer.hidden) {
-                        for (const tile of layer.tiles) {
-                            const img = glob.texturemap[tile.texture],
-                                  tex = img.g;
-                            const x = tex.offx + (tex.width + tex.marginx) * tile.grid[0] - tex.marginx,
-                                  y = tex.offy + (tex.height + tex.marginy) * tile.grid[1] - tex.marginy,
-                                  w = (tex.width + tex.marginx) * tile.grid[2] - tex.marginx,
-                                  h = (tex.height + tex.marginy) * tile.grid[3] - tex.marginy;
-                            canvas.x.drawImage(
-                                img,
-                                x, y, w, h,
-                                tile.x, tile.y, w, h
-                            );
+                        /* eslint max-depth: 0 */
+                        /* eslint max-len: 0 */
+                        if (this.room.extends.isTilemap) {
+                            for (const tile of layer.tiles) {
+                                const img = glob.texturemap[tile.texture],
+                                      tex = img.g;
+                                const x = tex.offx + (tex.width + tex.marginx) * tile.grid[0] - tex.marginx,
+                                      y = tex.offy + (tex.height + tex.marginy) * tile.grid[1] - tex.marginy,
+                                      w = (tex.width + tex.marginx) * tile.grid[2] - tex.marginx,
+                                      h = (tex.height + tex.marginy) * tile.grid[3] - tex.marginy;
+                                canvas.x.drawImage(
+                                    img,
+                                    x + w / 4, y + h / 4, w / 2, h / 2,
+                                    tile.x, tile.y, 50, 50
+                                );
+                            }
+                        } else {
+                            for (const tile of layer.tiles) {
+                                const img = glob.texturemap[tile.texture],
+                                      tex = img.g;
+                                const x = tex.offx + (tex.width + tex.marginx) * tile.grid[0] - tex.marginx,
+                                      y = tex.offy + (tex.height + tex.marginy) * tile.grid[1] - tex.marginy,
+                                      w = (tex.width + tex.marginx) * tile.grid[2] - tex.marginx,
+                                      h = (tex.height + tex.marginy) * tile.grid[3] - tex.marginy;
+                                canvas.x.drawImage(
+                                    img,
+                                    x, y, w, h,
+                                    tile.x, tile.y, w, h
+                                );
+                            }
                         }
                     }
                 } else if (this.stack[i].texture) { // a background layer
-                    if (this.stack[i].texture !== -1) {
+                    if (!this.room.extends.isTilemap && this.stack[i].texture !== -1) {
                         if (!('extends' in this.stack[i])) {
                             this.stack[i].extends = {};
                         }
@@ -663,7 +714,22 @@ room-editor.panel.view
                         grax = gray = 16;
                         ox = oy = 0;
                     }
-                    if (copy.tx || copy.ty || copy.tr) {
+                    if (this.room.extends.isTilemap) {
+                        const tex = glob.texturemap[type.texture].g;
+                        if (w > h) {
+                            canvas.x.drawImage(
+                                texture,
+                                tex.offx, tex.offy, w, h,
+                                copy.x, copy.y + 25 - (h / w) * 25, 50, (h / w) * 50
+                            );
+                        } else {
+                            canvas.x.drawImage(
+                                texture,
+                                tex.offx, tex.offy, w, h,
+                                copy.x + 25 - (w / h) * 25, copy.y, (w / h) * 50, 50
+                            );
+                        }
+                    } else if (copy.tx || copy.ty || copy.tr) {
                         canvas.x.save();
                         canvas.x.translate(copy.x, copy.y);
                         canvas.x.rotate((copy.tr || 0) * Math.PI / -180);
@@ -700,12 +766,21 @@ room-editor.panel.view
             if (this.tab === 'roomtiles' && this.selectedTiles && this.selectedTiles.length) {
                 for (const tile of this.selectedTiles) {
                     const {g} = glob.texturemap[tile.texture];
-                    this.drawSelection(
-                        tile.x,
-                        tile.y,
-                        tile.x + g.width * tile.grid[2],
-                        tile.y + g.height * tile.grid[3]
-                    );
+                    if (this.room.extends.isTilemap) {
+                        this.drawSelection(
+                            tile.x,
+                            tile.y,
+                            tile.x + 50,
+                            tile.y + 50
+                        );
+                    } else {
+                        this.drawSelection(
+                            tile.x,
+                            tile.y,
+                            tile.x + g.width * tile.grid[2],
+                            tile.y + g.height * tile.grid[3]
+                        );
+                    }
                 }
             }
             // Outline selected copies
@@ -756,8 +831,14 @@ room-editor.panel.view
                     cx.stroke();
                     return;
                 }
-                if (type.texture !== -1) {
-                    left = copy.x - texture.axis[0] * (copy.tx || 1) - 1.5;
+                if (this.room.extends.isTilemap) {
+                    left = copy.x - 1.5;
+                    top = copy.y - 1.5;
+                    width = 53;
+                    height = 53;
+                } else if (type.texture !== -1) {
+                    left = copy
+                    .x - texture.axis[0] * (copy.tx || 1) - 1.5;
                     top = copy.y - texture.axis[1] * (copy.ty || 1) - 1.5;
                     width = texture.width * (copy.tx || 1) + 3;
                     height = texture.height * (copy.ty || 1) + 3;

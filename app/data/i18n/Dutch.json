@@ -466,12 +466,15 @@
         "moveTileLayer": "Beweeg naar een nieuwe diepte",
         "show": "Laat de laag zien",
         "hide": "Verberg de laag",
-        "findTileset": "Zoek een tegelset"
+        "findTileset": "Zoek een tegelset",
+        "blockingTiles": ""
     },
     "roomview": {
         "name": "Naam:",
         "width": "Venster breedte:",
         "height": "Venster hoogte:",
+        "mapWidth": "",
+        "mapHeight": "",
         "events": "Kamer evenementen",
         "copies": "Kopieën",
         "backgrounds": "Achtergrond",
@@ -507,6 +510,7 @@
         "changecopyrotation": "",
         "properties": "",
         "isUi": "",
+        "isTilemap": "",
         "backgroundColor": "",
         "sortHorizontally": "",
         "sortVertically": "",

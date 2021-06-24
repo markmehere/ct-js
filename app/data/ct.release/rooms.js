@@ -35,36 +35,57 @@ class Room extends PIXI.Container {
                 ct.pixiApp.renderer.backgroundColor = ct.u.hexToPixi(this.template.backgroundColor);
             }
             /*%beforeroomoncreate%*/
-            for (let i = 0, li = template.bgs.length; i < li; i++) {
-                // Need to put extensions here, so we don't use ct.backgrounds.add
-                const bg = new ct.types.Background(
-                    template.bgs[i].texture,
-                    null,
-                    template.bgs[i].depth,
-                    template.bgs[i].extends
-                );
-                this.addChild(bg);
-            }
-            for (let i = 0, li = template.tiles.length; i < li; i++) {
-                const tl = new Tilemap(template.tiles[i]);
-                tl.cache();
-                this.tileLayers.push(tl);
-                this.addChild(tl);
-            }
-            for (let i = 0, li = template.objects.length; i < li; i++) {
-                const exts = template.objects[i].exts || {};
-                ct.types.make(
-                    template.objects[i].type,
-                    template.objects[i].x,
-                    template.objects[i].y,
-                    {
-                        tx: template.objects[i].tx,
-                        ty: template.objects[i].ty,
-                        tr: template.objects[i].tr,
-                        ...exts
+            if (template.extends.isTilemap) {
+                const instanceConfig = {
+                    mapData: template.traviso,
+                    externalPIXI: true,
+                    highlightPath: false,
+                    highlightTargetTile: true,
+                    initialPositionFrame: {
+                        x: 0,
+                        y: 0,
+                        w: ct.width,
+                        h: ct.height
                     },
-                    this
-                );
+                    initialZoomLevel: template.zoom - 1,
+                    maxScale: 2
+                };
+                console.log(template.zoom)
+                const TRAVISO = window.TRAVISO;
+                const engine = TRAVISO.getEngineInstance(instanceConfig);
+                this.addChild(engine);
+            } else {
+                for (let i = 0, li = template.bgs.length; i < li; i++) {
+                    // Need to put extensions here, so we don't use ct.backgrounds.add
+                    const bg = new ct.types.Background(
+                        template.bgs[i].texture,
+                        null,
+                        template.bgs[i].depth,
+                        template.bgs[i].extends
+                    );
+                    this.addChild(bg);
+                }
+                for (let i = 0, li = template.tiles.length; i < li; i++) {
+                    const tl = new Tilemap(template.tiles[i]);
+                    tl.cache();
+                    this.tileLayers.push(tl);
+                    this.addChild(tl);
+                }
+                for (let i = 0, li = template.objects.length; i < li; i++) {
+                    const exts = template.objects[i].exts || {};
+                    ct.types.make(
+                        template.objects[i].type,
+                        template.objects[i].x,
+                        template.objects[i].y,
+                        {
+                            tx: template.objects[i].tx,
+                            ty: template.objects[i].ty,
+                            tr: template.objects[i].tr,
+                            ...exts
+                        },
+                        this
+                    );
+                }
             }
         }
         return this;

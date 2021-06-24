@@ -452,6 +452,8 @@
         "name": "Имя:",
         "width": "Ширина вида:",
         "height": "Высота вида:",
+        "mapWidth": "",
+        "mapHeight": "",
         "events": "События комнаты",
         "copies": "Копии",
         "backgrounds": "Фоны",
@@ -488,6 +490,7 @@
         "changecopyrotation": "Повернуть",
         "properties": "Свойства",
         "isUi": "",
+        "isTilemap": "",
         "sortHorizontally": "",
         "sortVertically": "",
         "copyProperties": {

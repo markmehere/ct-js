@@ -1,5 +1,6 @@
 const glob = require('./../glob');
 const {getUnwrappedExtends} = require('./utils');
+const traviso = require('../../../data/ct.libs/traviso/exporter');
 
 const getStartingRoom = proj => {
     let [startroom] = proj.rooms; // picks the first room by default
@@ -33,6 +34,7 @@ const getConstraints = r => {
     return false;
 };
 
+// eslint-disable-next-line complexity
 const stringifyRooms = proj => {
     let roomsCode = '';
     for (const k in proj.rooms) {
@@ -80,17 +82,22 @@ const stringifyRooms = proj => {
         }
 
         const constraints = getConstraints(r);
+        const safeWidth = (proj.libs && proj.libs.traviso && proj.libs.traviso.viewWidth) || 800;
+        const safeHeight = (proj.libs && proj.libs.traviso && proj.libs.traviso.viewHeight) || 600;
+        const safeZoom = (proj.libs && proj.libs.traviso && proj.libs.traviso.zoom) || 1;
 
         roomsCode += `
 ct.rooms.templates['${r.name}'] = {
     name: '${r.name}',
-    width: ${r.width},
-    height: ${r.height},
+    width: ${r.extends.isTilemap ? safeWidth : r.width},
+    height: ${r.extends.isTilemap ? safeHeight : r.height},
+    zoom: ${safeZoom},
     /* JSON.parse allows for a much faster loading of big objects */
     objects: JSON.parse('${JSON.stringify(objs).replace(/\\/g, '\\\\')}'),
     bgs: JSON.parse('${JSON.stringify(bgsCopy).replace(/\\/g, '\\\\')}'),
     tiles: JSON.parse('${JSON.stringify(tileLayers).replace(/\\/g, '\\\\')}'),
     backgroundColor: '${r.backgroundColor || '#000000'}',
+    ${traviso && r.extends.isTilemap ? 'traviso: ' + JSON.stringify(traviso.getTravisoExport(r)) + ',' : ''}
     ${constraints ? 'cameraConstraints: ' + JSON.stringify(constraints) + ',' : ''}
     onStep() {
         ${proj.rooms[k].onstep}

@@ -11,7 +11,10 @@ room-tile-editor.room-editor-Tiles.tabbed.tall.flexfix
             svg.feather
                 use(xlink:href="data/icons.svg#search")
             span {voc.findTileset}
-        .flexrow
+        label.block.checkbox(if="{opts.room.extends.isTilemap}")
+            input(type="checkbox" checked="{parent.currentTileset && blockingTiles[parent.currentTileset.name]}" onchange="{setTilemapBlocking}")
+            b {voc.blockingTiles}
+        .flexrow(if="{!opts.room.extends.isTilemap}")
             select.wide(onchange="{changeTileLayer}" value="{parent.currentTileLayerId}")
                 option(each="{layer, ind in opts.room.tiles}" selected="{parent.currentTileLayerId === ind}" value="{ind}") {layer.hidden? '❌' : '✅'} {layer.depth}
 
@@ -27,10 +30,20 @@ room-tile-editor.room-editor-Tiles.tabbed.tall.flexfix
             span.act(title="{vocGlob.add}" onclick="{addTileLayer}")
                 svg.feather
                     use(xlink:href="data/icons.svg#plus")
-        .block
+        .block(if="{!opts.room.extends.isTilemap}")
             extensions-editor(type="tileLayer" entity="{parent.currentTileLayer.extends}" compact="yep" wide="sure")
     texture-selector(ref="tilesetPicker" if="{pickingTileset}" oncancelled="{onTilesetCancel}" onselected="{onTilesetSelected}")
     script.
+        this.blockingTiles = {};
+        if (global.currentProject.libs.traviso) {
+            const blockingTiles = global.currentProject.libs.traviso.blockingTiles || {};
+            global.currentProject.libs.traviso.blockingTiles = blockingTiles;
+            this.blockingTiles = blockingTiles;
+        }
+        this.setTilemapBlocking = () => {
+            const {currentTileset} = this.parent;
+            this.blockingTiles[currentTileset.name] = !this.blockingTiles[currentTileset.name];
+        };
         this.parent.tileX = 0;
         this.parent.tileY = 0;
         this.parent.tileSpanX = 1;

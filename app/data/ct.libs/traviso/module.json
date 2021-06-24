@@ -1,0 +1,43 @@
+{
+    "main": {
+        "name": "Traviso",
+        "tagline": "Integrates Traviso - an isometric engine",
+        "version": "1.0.0",
+        "authors": [
+            {
+                "name": "Mark Pazolli"
+            }
+        ],
+        "categories": ["integrations"]
+    },
+    "fields": [
+        {
+            "name": "Controllable sprite",
+            "key": "controllable",
+            "type": "type"
+        },
+        {
+            "name": "Highlight tile",
+            "key": "highlightTile",
+            "type": "texture"
+        },
+        {
+            "name": "Default view width",
+            "type": "number",
+            "key": "viewWidth",
+            "default": 800
+        },
+        {
+            "name": "Default view height",
+            "type": "number",
+            "key": "viewHeight",
+            "default": 600
+        },
+        {
+            "name": "Default zoom (between 0.1 and 3)",
+            "type": "number",
+            "key": "zoom",
+            "default": 2
+        }
+    ]
+}

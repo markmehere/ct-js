@@ -497,13 +497,18 @@
         "moveTileLayer": "Move to a new depth",
         "show": "Show the layer",
         "hide": "Hide the layer",
-        "findTileset": "Find a Tileset"
+        "findTileset": "Find a Tileset",
+        "blockingTiles": "Tiles block movement"
     },
     "roomview": {
+        "preview": "Preview",
         "name": "Name:",
         "width": "View width:",
         "height": "View height:",
+        "mapWidth": "Map width:",
+        "mapHeight": "Map height:",
         "isUi": "Is a UI layer?",
+        "isTilemap": "Is a tilemap?",
         "events": "Room events",
         "copies": "Copies",
         "backgrounds": "Backgrounds",

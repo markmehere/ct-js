@@ -468,7 +468,9 @@
     "roomview": {
         "name": "Name:",
         "width": "Largeur:",
-        "height": "Hauteur",
+        "height": "Hauteur:",
+        "mapWidth": "Largeur:",
+        "mapHeight": "Hauteur:",
         "events": "Salle events",
         "copies": "Copier",
         "backgrounds": "Backgrounds",
@@ -504,6 +506,7 @@
         "changecopyrotation": "",
         "properties": "",
         "isUi": "",
+        "isTilemap": "",
         "backgroundColor": "",
         "sortHorizontally": "",
         "sortVertically": "",

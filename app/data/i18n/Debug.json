@@ -300,12 +300,15 @@
         "moveTileLayer": "roomtiles.moveTileLayer",
         "show": "roomtiles.show",
         "hide": "roomtiles.hide",
-        "findTileset": "roomtiles.findTileset"
+        "findTileset": "roomtiles.findTileset",
+        "blockingTiles": "roomtiles.blockingTiles"
     },
     "roomview": {
         "name": "roomview.name",
         "width": "roomview.width",
         "height": "roomview.height",
+        "mapWidth": "roomview.mapWidth",
+        "mapHeight": "roomview.mapHeight",
         "events": "roomview.events",
         "copies": "roomview.copies",
         "backgrounds": "roomview.backgrounds",
@@ -341,6 +344,7 @@
         "changecopyrotation": "roomview.changecopyrotation",
         "properties": "roomview.properties",
         "isUi": "roomview.isUi",
+        "isTilemap": "roomview.isTilemap",
         "backgroundColor": "roomview.backgroundColor",
         "sortHorizontally": "roomview.sortHorizontally",
         "sortVertically": "roomview.sortVertically",

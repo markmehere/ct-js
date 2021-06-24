@@ -24,7 +24,34 @@
             ox = oy = 0;
             grax = gray = 16;
         }
-        if (this.room.gridX === 0 || e.altKey) {
+        if (this.room.extends.isTilemap) {
+            const dx = this.xToRoom(e.offsetX) +
+                     (this.room.extends.isTilemap ? -25 : 0),
+                  dy = this.yToRoom(e.offsetY) +
+                     (this.room.extends.isTilemap ? -25 : 0);
+            const {room} = this;
+            if (w > h) {
+                const dcx = this.xToCanvas(Math.round(dx / room.gridX) * room.gridX) /
+                            this.zoomFactor,
+                      dcy = this.yToCanvas(Math.round(dy / room.gridY) * room.gridY) /
+                            this.zoomFactor + 25 - (h / w) * 25;
+                this.refs.canvas.x.drawImage(
+                    img,
+                    ox, oy, w, h,
+                    dcx, dcy, 50, (h / w) * 50
+                );
+            } else {
+                const dcx = this.xToCanvas(Math.round(dx / room.gridX) * room.gridX) /
+                            this.zoomFactor + 25 - (w / h) * 25,
+                      dcy = this.yToCanvas(Math.round(dy / room.gridY) * room.gridY) /
+                            this.zoomFactor;
+                this.refs.canvas.x.drawImage(
+                    img,
+                    ox, oy, w, h,
+                    dcx, dcy, (w / h) * 50, 50
+                );
+            }
+        } else if (this.room.gridX === 0 || e.altKey) {
             this.refs.canvas.x.drawImage(
                 img,
                 ox, oy, w, h,
@@ -32,16 +59,18 @@
             );
         } else {
             // если есть сетка, то координаты предварительной копии нужно отснэпить по сетке
-            var dx = this.xToRoom(e.offsetX),
-                dy = this.yToRoom(e.offsetY);
+            const {room} = this;
+            const dx = this.xToRoom(e.offsetX),
+                  dy = this.yToRoom(e.offsetY);
+            const dcx = this.xToCanvas(Math.round(dx / room.gridX) * room.gridX) /
+                        this.zoomFactor - grax,
+                  dcy = this.yToCanvas(Math.round(dy / room.gridY) * room.gridY) /
+                        this.zoomFactor - gray;
             w = texture.width;
             h = texture.height;
-            const {room} = this;
             this.refs.canvas.x.drawImage(
                 img, ox, oy, w, h,
-                this.xToCanvas(Math.round(dx / room.gridX) * room.gridX) / this.zoomFactor - grax,
-                this.yToCanvas(Math.round(dy / room.gridY) * room.gridY) / this.zoomFactor - gray,
-                w, h
+                dcx, dcy, w, h
             );
         }
     };
@@ -49,8 +78,8 @@
         var pos = 0,
             length = Infinity,
             l,
-            fromx = this.xToRoom(e.offsetX),
-            fromy = this.yToRoom(e.offsetY);
+            fromx = this.xToRoom(e.offsetX) + (this.room.extends.isTilemap ? -25 : 0),
+            fromy = this.yToRoom(e.offsetY) + (this.room.extends.isTilemap ? -25 : 0);
         const layerCopies = this.room.copies;
         for (let j = 0, lj = layerCopies.length; j < lj; j++) {
             const xp = layerCopies[j].x - fromx,
@@ -102,11 +131,19 @@
                 for (const copy of this.room.copies) {
                     const textureId = global.currentProject.types[glob.typemap[copy.uid]].texture;
                     const {g} = glob.texturemap[textureId];
-                    const x1 = copy.x - g.axis[0] * (copy.tx || 1),
-                          x2 = copy.x - (g.axis[0] - g.width) * (copy.tx || 1),
-                          y1 = copy.y - g.axis[1] * (copy.ty || 1),
-                          y2 = copy.y - (g.axis[1] - g.height) * (copy.ty || 1),
-                          xcmin = Math.min(x1, x2),
+                    const x1 = copy.x - (this.room.extends.isTilemap ?
+                        0 :
+                        g.axis[0] * (copy.tx || 1));
+                    const x2 = copy.x - (this.room.extends.isTilemap ?
+                        -50 :
+                        (g.axis[0] - g.width) * (copy.tx || 1));
+                    const y1 = copy.y - (this.room.extends.isTilemap ?
+                        0 :
+                        g.axis[1] * (copy.ty || 1));
+                    const y2 = copy.y - (this.room.extends.isTilemap ?
+                        -50 :
+                        (g.axis[1] - g.height) * (copy.ty || 1));
+                    const xcmin = Math.min(x1, x2),
                           ycmin = Math.min(y1, y2),
                           xcmax = Math.max(x1, x2),
                           ycmax = Math.max(y1, y2);
@@ -158,6 +195,7 @@
                 this.refreshRoomCanvas();
             };
             // Place a copy on click
+            // eslint-disable-next-line complexity
             this.onCanvasClickCopies = e => {
                 if (
                     Math.hypot(
@@ -197,7 +235,8 @@
                 if ((this.currentType === -1 || e.ctrlKey) && e.button === 0) {
                     return;
                 }
-                if (Number(this.room.gridX) === 0 || e.altKey) {
+                const freerange = Number(this.room.gridX) === 0 || e.altKey;
+                if (freerange && !this.room.extends.isTilemap) {
                     if (this.lastCopyX !== Math.floor(this.xToRoom(e.offsetX)) ||
                         this.lastCopyY !== Math.floor(this.yToRoom(e.offsetY))
                     ) {
@@ -212,8 +251,10 @@
                         this.refreshRoomCanvas();
                     }
                 } else {
-                    var x = Math.floor(this.xToRoom(e.offsetX)),
-                        y = Math.floor(this.yToRoom(e.offsetY));
+                    const x = Math.floor(this.xToRoom(e.offsetX)) +
+                        (this.room.extends.isTilemap ? -25 : 0);
+                    const y = Math.floor(this.yToRoom(e.offsetY)) +
+                        (this.room.extends.isTilemap ? -25 : 0);
                     if (this.lastCopyX !== Math.round(x / this.room.gridX) * this.room.gridX ||
                         this.lastCopyY !== Math.round(y / this.room.gridY) * this.room.gridY
                     ) {
@@ -229,7 +270,7 @@
                     }
                 }
             };
-            /* eslint max-depth: 0 */
+            // eslint-disable-next-line complexity
             this.onCanvasMoveCopies = e => {
                 if (e.ctrlKey && (!isMac || e.altKey)) {
                     if (this.mouseDown && this.room.copies.length !== 0) {
@@ -377,6 +418,7 @@
                     key: 'Delete'
                 }, {
                     label: window.languageJSON.roomview.changecopyscale,
+                    hiddenForTilemap: true,
                     click: () => {
                         var copy = this.room.copies[this.closestPos];
                         window.alertify.confirm(`
@@ -398,6 +440,7 @@
                     }
                 }, {
                     label: window.languageJSON.roomview.changecopyrotation,
+                    hiddenForTilemap: true,
                     click: () => {
                         var copy = this.room.copies[this.closestPos];
                         window.alertify.confirm(`
@@ -416,20 +459,21 @@
                 }, {
                     label: window.languageJSON.roomview.shiftcopy,
                     click: () => {
-                        var copy = this.room.copies[this.closestPos];
+                        const {isTilemap} = this.room.extends;
+                        const copy = this.room.copies[this.closestPos];
                         window.alertify.confirm(`
                             ${window.languageJSON.roomview.shiftcopy}
                             <label class="block">X:
-                                <input id="copypositionx" type="number" value="${copy.x}" />
+                                <input id="copypositionx" type="number" value="${isTilemap ? copy.x / 50 : copy.x}" />
                             </label>
                             <label class="block">Y:
-                                <input id="copypositiony" type="number" value="${copy.y}" />
+                                <input id="copypositiony" type="number" value="${isTilemap ? copy.y / 50 : copy.y}" />
                             </label>
                         `)
                         .then(e => {
                             if (e.buttonClicked === 'ok') {
-                                copy.x = Number(document.getElementById('copypositionx').value) || 0;
-                                copy.y = Number(document.getElementById('copypositiony').value) || 0;
+                                copy.x = Number(document.getElementById('copypositionx').value) * (isTilemap ? 50 : 1) || 0;
+                                copy.y = Number(document.getElementById('copypositiony').value) * (isTilemap ? 50 : 1) || 0;
                                 this.refreshRoomCanvas();
                             }
                         });
@@ -441,6 +485,10 @@
                         this.toggleCopyProperties(true);
                     }
                 }]
+            };
+            this.roomTilemapCanvasMenu = {
+                opened: false,
+                items: this.roomCanvasMenu.items.filter(x => !x.hiddenForTilemap)
             };
         }
     };

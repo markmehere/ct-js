@@ -7,8 +7,8 @@
         var pos = 0,
             length = Infinity,
             l,
-            fromx = this.xToRoom(e.offsetX),
-            fromy = this.yToRoom(e.offsetY);
+            fromx = this.xToRoom(e.offsetX) + (this.room.extends.isTilemap ? -25 : 0),
+            fromy = this.yToRoom(e.offsetY) + (this.room.extends.isTilemap ? -25 : 0);
         for (let i = 0, li = this.currentTileLayer.tiles.length; i < li; i++) {
             const xp = this.currentTileLayer.tiles[i].x - fromx,
                   yp = this.currentTileLayer.tiles[i].y - fromy;
@@ -95,7 +95,15 @@
                   w = (tex.width + tex.marginx) * this.tileSpanX - tex.marginx,
                   h = (tex.height + tex.marginy) * this.tileSpanY - tex.marginy;
             const {room} = this;
-            if (room.gridX === 0 || e.altKey) {
+            if (room.extends.isTilemap) {
+                this.refs.canvas.x.drawImage(
+                    img,
+                    sx + w / 4, sy + h / 4, w / 2, h / 2,
+                    (e.offsetX) / this.zoomFactor - 50 / 2,
+                    (e.offsetY) / this.zoomFactor - 50 / 2,
+                    50, 50
+                );
+            } else if (room.gridX === 0 || e.altKey) {
                 this.refs.canvas.x.drawImage(
                     img,
                     sx, sy, w, h,
@@ -118,6 +126,7 @@
         }
     };
 
+    // eslint-disable-next-line complexity, max-lines-per-function
     const onCanvasClickTiles = function (e) {
         if (
             Math.hypot(
@@ -164,7 +173,28 @@
         const tex = this.currentTileset;
         const w = (tex.width + tex.marginx) * this.tileSpanX - tex.marginx,
               h = (tex.height + tex.marginy) * this.tileSpanY - tex.marginy;
-        if (Number(this.room.gridX) === 0 || e.altKey) {
+        if (this.room.extends.isTilemap) {
+            const x = Math.floor(this.xToRoom(e.offsetX - 50 / 2 * this.zoomFactor)),
+                  y = Math.floor(this.yToRoom(e.offsetY - 50 / 2 * this.zoomFactor));
+            if (this.lastTileX !== Math.round(x / this.room.gridX) * this.room.gridX ||
+                this.lastTileY !== Math.round(y / this.room.gridY) * this.room.gridY
+            ) {
+                this.lastTileX = Math.round(x / this.room.gridX) * this.room.gridX;
+                this.lastTileY = Math.round(y / this.room.gridY) * this.room.gridY;
+                for (let i = 0; i < this.currentTileLayer.tiles.length; i++) {
+                    if (this.currentTileLayer.tiles[i].x === this.lastTileX &&
+                        this.currentTileLayer.tiles[i].y === this.lastTileY) {
+                        this.currentTileLayer.tiles.splice(i--, 1);
+                    }
+                }
+                this.currentTileLayer.tiles.push({
+                    x: this.lastTileX,
+                    y: this.lastTileY,
+                    texture: this.currentTileset.uid,
+                    grid: [this.tileX, this.tileY, this.tileSpanX, this.tileSpanY]
+                });
+            }
+        } else if (Number(this.room.gridX) === 0 || e.altKey) {
             if (this.lastTileX !== Math.floor(this.xToRoom(e.offsetX) - w / 2) ||
                 this.lastTileY !== Math.floor(this.yToRoom(e.offsetY) - h / 2)
             ) {
@@ -229,7 +259,9 @@
                     top = tile.y - 1.5,
                     width = ((tex.width + tex.marginx) * tile.grid[2]) - tex.marginx + 3,
                     height = ((tex.height + tex.marginy) * tile.grid[3]) - tex.marginy + 3;
-                this.drawSelection(left, top, left + width, top + height);
+                const right = left + (this.room.extends.isTilemap ? 50 : width);
+                const bottom = top + (this.room.extends.isTilemap ? 50 : height);
+                this.drawSelection(left, top, right, bottom);
 
                 this.forbidDrawing = true;
                 setTimeout(() => {
