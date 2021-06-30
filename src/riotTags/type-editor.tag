@@ -19,6 +19,9 @@ type-editor.panel.view.flexrow
                     input(type="checkbox" checked="{type.extends.visible === void 0 ? true : type.extends.visible}" onchange="{wire('this.type.extends.visible')}")
                     span {voc.visible}
                 extensions-editor(type="type" entity="{type.extends}" wide="yep" compact="probably")
+                label.block.checkbox(if="{global.currentProject.libs.traviso || type.extends.tilemapEvents}")
+                    input(type="checkbox" checked="{type.extends.tilemapEvents}" onchange="{toggleTilemapEvents}")
+                    span {voc.tilemapEvents}
                 br
                 br
                 docs-shortcut(path="/ct.types.html" button="true" wide="true" title="{voc.learnAboutTypes}")
@@ -30,31 +33,55 @@ type-editor.panel.view.flexrow
     .type-editor-aCodeEditor
         .tabwrap.tall(style="position: relative")
             ul.tabs.nav.nogrow.noshrink
-                li(onclick="{changeTab('typeoncreate')}" class="{active: tab === 'typeoncreate'}" title="{voc.create} (Control+Q)" data-hotkey="Control+q")
+                li(onclick="{changeTab('typeoncreate')}" class="{active: tab === 'typeoncreate'}" title="{voc.create} (Control+Q)" data-hotkey="Control+q" if="{!type.extends.tilemapEvents}")
                     svg.feather
                         use(xlink:href="data/icons.svg#sun")
                     span {voc.create}
-                li(onclick="{changeTab('typeonstep')}" class="{active: tab === 'typeonstep'}" title="{voc.step} (Control+W)" data-hotkey="Control+w")
+                li(onclick="{changeTab('typeonstep')}" class="{active: tab === 'typeonstep'}" title="{voc.step} (Control+W)" data-hotkey="Control+w" if="{!type.extends.tilemapEvents}")
                     svg.feather
                         use(xlink:href="data/icons.svg#skip-forward")
                     span {voc.step}
-                li(onclick="{changeTab('typeondraw')}" class="{active: tab === 'typeondraw'}" title="{voc.draw} (Control+E)" data-hotkey="Control+e")
+                li(onclick="{changeTab('typeondraw')}" class="{active: tab === 'typeondraw'}" title="{voc.draw} (Control+E)" data-hotkey="Control+e" if="{!type.extends.tilemapEvents}")
                     svg.feather
                         use(xlink:href="data/icons.svg#edit-2")
                     span {voc.draw}
-                li(onclick="{changeTab('typeondestroy')}" class="{active: tab === 'typeondestroy'}" title="{voc.destroy} (Control+R)" data-hotkey="Control+r")
+                li(onclick="{changeTab('typeondestroy')}" class="{active: tab === 'typeondestroy'}" title="{voc.destroy} (Control+R)" data-hotkey="Control+r" if="{!type.extends.tilemapEvents}")
                     svg.feather
                         use(xlink:href="data/icons.svg#trash")
                     span {voc.destroy}
+                li(onclick="{changeTab('typeonapproach')}" class="{active: tab === 'typeonapproach'}" title="{voc.approach}" if="{type.extends.tilemapEvents}")
+                    svg.feather
+                        use(xlink:href="data/icons.svg#space-shooter")
+                    span {voc.approach}
+                li(onclick="{changeTab('typeonstopnear')}" class="{active: tab === 'typeonstopnear'}" title="{voc.stopnear}" if="{type.extends.tilemapEvents}")
+                    svg.feather
+                        use(xlink:href="data/icons.svg#ui")
+                    span {voc.stopnear}
+                li(onclick="{changeTab('typeoncollect')}" class="{active: tab === 'typeoncollect'}" title="{voc.collect}" if="{type.extends.tilemapEvents}")
+                    svg.feather
+                        use(xlink:href="data/icons.svg#space-shooter")
+                    span {voc.collect}
+                li(onclick="{changeTab('typeonreach')}" class="{active: tab === 'typeonreach'}" title="{voc.reach}" if="{type.extends.tilemapEvents}")
+                    svg.feather
+                        use(xlink:href="data/icons.svg#ui")
+                    span {voc.reach}
             div
-                #typeoncreate.tabbed(show="{tab === 'typeoncreate'}")
+                #typeoncreate.tabbed(show="{tab === 'typeoncreate' && !type.extends.tilemapEvents}")
                     .aCodeEditor(ref="typeoncreate")
-                #typeonstep.tabbed(show="{tab === 'typeonstep'}")
+                #typeonstep.tabbed(show="{tab === 'typeonstep' && !type.extends.tilemapEvents}")
                     .aCodeEditor(ref="typeonstep")
-                #typeondraw.tabbed(show="{tab === 'typeondraw'}")
+                #typeondraw.tabbed(show="{tab === 'typeondraw' && !type.extends.tilemapEvents}")
                     .aCodeEditor(ref="typeondraw")
-                #typeondestroy.tabbed(show="{tab === 'typeondestroy'}")
+                #typeondestroy.tabbed(show="{tab === 'typeondestroy' && !type.extends.tilemapEvents}")
                     .aCodeEditor(ref="typeondestroy")
+                #typeonapproach.tabbed(show="{tab === 'typeonapproach' && type.extends.tilemapEvents}")
+                    .aCodeEditor(ref="typeonapproach")
+                #typeonstopnear.tabbed(show="{tab === 'typeonstopnear' && type.extends.tilemapEvents}")
+                    .aCodeEditor(ref="typeonstopnear")
+                #typeoncollect.tabbed(show="{tab === 'typeoncollect' && type.extends.tilemapEvents}")
+                    .aCodeEditor(ref="typeoncollect")
+                #typeonreach.tabbed(show="{tab === 'typeonreach' && type.extends.tilemapEvents}")
+                    .aCodeEditor(ref="typeonreach")
     script.
         const glob = require('./data/node_requires/glob');
         this.glob = glob;
@@ -65,7 +92,7 @@ type-editor.panel.view.flexrow
         this.getTypeTextureRevision = type => glob.texturemap[type.texture].g.lastmod;
 
         this.type = this.opts.type;
-        this.tab = 'typeoncreate';
+        this.tab = this.type.extends.tilemapEvents ? 'typeonapproach' : 'typeoncreate';
 
         const tabToEditor = tab => {
             tab = tab || this.tab;
@@ -77,6 +104,14 @@ type-editor.panel.view.flexrow
                 return this.typeondestroy;
             } else if (tab === 'typeoncreate') {
                 return this.typeoncreate;
+            } else if (tab === 'typeonapproach') {
+                return this.typeonapproach;
+            } else if (tab === 'typeonstopnear') {
+                return this.typeonstopnear;
+            } else if (tab === 'typeoncollect') {
+                return this.typeoncollect;
+            } else if (tab === 'typeonreach') {
+                return this.typeonreach;
             }
             return null;
         };
@@ -88,6 +123,18 @@ type-editor.panel.view.flexrow
                 editor.layout();
                 editor.focus();
             }, 0);
+        };
+
+        this.toggleTilemapEvents = () => {
+            console.log('change');
+            if (this.type.extends.tilemapEvents)  {
+                this.type.extends.tilemapEvents = false;
+                this.changeTab('typeoncreate')();
+            }
+            else {
+                this.type.extends.tilemapEvents = true;
+                this.changeTab('typeonapproach')();
+            }
         };
 
         const updateEditorSize = () => {
@@ -113,47 +160,41 @@ type-editor.panel.view.flexrow
                 lockWrapper: true
             };
             setTimeout(() => {
-                this.typeoncreate = window.setupCodeEditor(
-                    this.refs.typeoncreate,
-                    Object.assign({}, editorOptions, {
-                        value: this.type.oncreate,
-                        wrapper: ['function onCreate(this: Copy) {', '}']
-                    })
-                );
-                this.typeonstep = window.setupCodeEditor(
-                    this.refs.typeonstep,
-                    Object.assign({}, editorOptions, {
-                        value: this.type.onstep,
-                        wrapper: ['function onStep(this: Copy) {', '}']
-                    })
-                );
-                this.typeondraw = window.setupCodeEditor(
-                    this.refs.typeondraw,
-                    Object.assign({}, editorOptions, {
-                        value: this.type.ondraw,
-                        wrapper: ['function onDraw(this: Copy) {', '}']
-                    })
-                );
-                this.typeondestroy = window.setupCodeEditor(
-                    this.refs.typeondestroy,
-                    Object.assign({}, editorOptions, {
-                        value: this.type.ondestroy,
-                        wrapper: ['function onDestroy(this: Copy) {', '}']
-                    })
-                );
+                const allEvents = [
+                    'oncreate',
+                    'onstep',
+                    'ondraw',
+                    'ondestroy',
+                    'onapproach',
+                    'onstopnear',
+                    'oncollect',
+                    'onreach'
+                ];
+                const allFnNames = [
+                    'onCreate',
+                    'onStep',
+                    'onDraw',
+                    'onDestroy',
+                    'onApproach',
+                    'onStopNear',
+                    'onCollect',
+                    'onReach'
+                ];
 
-                this.typeoncreate.onDidChangeModelContent(() => {
-                    this.type.oncreate = this.typeoncreate.getPureValue();
-                });
-                this.typeonstep.onDidChangeModelContent(() => {
-                    this.type.onstep = this.typeonstep.getPureValue();
-                });
-                this.typeondraw.onDidChangeModelContent(() => {
-                    this.type.ondraw = this.typeondraw.getPureValue();
-                });
-                this.typeondestroy.onDidChangeModelContent(() => {
-                    this.type.ondestroy = this.typeondestroy.getPureValue();
-                });
+                for (let i = 0; i < allEvents.length; i++) {
+                    const firstLine = i < 4 ? 'function ' + allFnNames[i] + '(this: Copy) {' :
+                        'function ' + allFnNames[i] + '(this: ObjectView) {';
+                    this['type' + allEvents[i]] = window.setupCodeEditor(
+                        this.refs['type' + allEvents[i]],
+                        Object.assign({}, editorOptions, {
+                            value: this.type[allEvents[i]],
+                            wrapper: [firstLine, '}']
+                        })
+                    );
+                    this['type' + allEvents[i]].onDidChangeModelContent(() => {
+                        this.type[allEvents[i]] = this['type' + allEvents[i]].getPureValue();
+                    });
+                }
                 this.typeoncreate.focus();
             }, 0);
         });
@@ -171,6 +212,10 @@ type-editor.panel.view.flexrow
             this.typeonstep.dispose();
             this.typeondraw.dispose();
             this.typeondestroy.dispose();
+            this.typeonapproach.dispose();
+            this.typeonstopnear.dispose();
+            this.typeoncollect.dispose();
+            this.typeonreach.dispose();
         });
 
         this.changeSprite = () => {

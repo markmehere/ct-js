@@ -444,6 +444,11 @@
         "learnAboutTypes": "Leren over code types",
         "name": "Naam:",
         "step": "Bij Stap",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

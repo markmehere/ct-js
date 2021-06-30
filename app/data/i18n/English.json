@@ -475,6 +475,11 @@
         "learnAboutTypes": "Learn about coding types",
         "name": "Name:",
         "step": "On Step",
+        "tilemapEvents": "Show tilemap events",
+        "approach": "On Approach",
+        "stopnear": "On Stops Near",
+        "collect": "On Collect",
+        "reach": "On Reach",
         "visible": "Visible"
     },
     "rooms": {

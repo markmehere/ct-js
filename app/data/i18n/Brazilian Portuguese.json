@@ -377,6 +377,11 @@
         "name": "Nome:",
         "step": "Passo",
         "learnAboutTypes": "Aprenda sobre programar tipos",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

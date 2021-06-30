@@ -22,6 +22,18 @@ ct.types.templates["${type.name}"] = {
     onCreate: function () {
         ${type.oncreate}
     },
+    onApproach: function() {
+        ${type.onapproach || ''}
+    },
+    onStopNear: function() {
+        ${type.onstopnear || ''}
+    },
+    onCollect: function() {
+        ${type.oncollect || ''}
+    },
+    onReach: function() {
+        ${type.onreach || ''}
+    },
     extends: ${type.extends ? JSON.stringify(getUnwrappedExtends(type.extends), null, 4) : '{}'}
 };
 ct.types.list['${type.name}'] = [];`;

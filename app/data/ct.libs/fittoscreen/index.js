@@ -44,6 +44,9 @@
                 ct.pixiApp.stage.scale.x = ct.pixiApp.stage.scale.y = pixelScaleModifier * k;
             }
         }
+        else {
+            ct.pixiApp.stage.scale.x = ct.pixiApp.stage.scale.y = 1.0;
+        }
         canv.style.width = Math.ceil(canvasWidth / pixelScaleModifier) + 'px';
         canv.style.height = Math.ceil(canvasHeight / pixelScaleModifier) + 'px';
         ct.camera.width = cameraWidth;

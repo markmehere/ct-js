@@ -278,6 +278,11 @@
         "learnAboutTypes": "",
         "name": "",
         "step": "",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

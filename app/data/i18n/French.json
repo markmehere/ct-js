@@ -441,6 +441,11 @@
         "name": "Nom:",
         "step": "On Step",
         "learnAboutTypes": "En apprendre plus sur les types de codage",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

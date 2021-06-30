@@ -5,7 +5,8 @@ function getTravisoExport(room) {
         tileHighlightImage: {},
         initialControllableLocation: {},
         groundMap: [],
-        objectsMap: []
+        objectsMap: [],
+        custom: {}
     };
     const currentProject = global.currentProject;
     const textures = {};
@@ -50,12 +51,26 @@ function getTravisoExport(room) {
         const texture = textures[sprite.texture];
         const grid = texture.grid;
         const path = texture.name;
+        const custom = JSON.parse(JSON.stringify(exts));
+        const ignoredKeys = [
+            'movable', 'interactive', 'rowSpan', 'columnSpan',
+            'noTransparency', 'floor', 'dawdle'
+        ];
+        for (key of ignoredKeys) {
+            delete custom[key];
+        }
         if (copyCache[path]) {
             id = copyCache[path];
+            if (Object.keys(custom).length > 0) {
+                roomExport.custom[`${id};${Math.floor(details.y / 50)};${Math.floor(details.x / 50)}`] = custom;
+            }
         }
         else {
             copyCnt++;
             id = copyCache[path] = copyCnt + tileCnt;
+            if (Object.keys(custom).length > 0) {
+                roomExport.custom[`${id};${Math.floor(details.y / 50)};${Math.floor(details.x / 50)}`] = custom;
+            }
             roomExport.objects[id] = {
                 movable: !!exts.movable,
                 interactive: !!exts.interactive,
@@ -63,7 +78,8 @@ function getTravisoExport(room) {
                 columnSpan: parseInt(exts.columnSpan || '1', 10),
                 noTransparency: (exts.noTransparency === undefined ? texture.height < 96 : !!exts.noTransparency),
                 floor: !!exts.floor,
-                visuals: {}
+                visuals: {},
+                spriteName: sprite.name
             };
             if (grid[0] === 1 && grid[1] === 1) {
                 roomExport.objects[id].visuals.idle = { frames: [{ path: `${path}@frame0` }] };
@@ -94,6 +110,24 @@ function getTravisoExport(room) {
                     }
                 }
             }
+            else if (grid[1] < 4) {
+                roomExport.objects[id].visuals.idle = { frames: [] };
+                for (let k = 0; k < grid[0]; k++) {
+                    roomExport.objects[id].visuals.idle.frames.push({ path: `${path}@frame${k}` });
+                }
+                if (grid[1] > 1) {
+                    roomExport.objects[id].visuals.alternate = { frames: [] };
+                    for (let k = 0; k < grid[0]; k++) {
+                        roomExport.objects[id].visuals.alternate.frames.push({ path: `${path}@frame${k}` });
+                    }
+                }
+                if (grid[1] > 2) {
+                    roomExport.objects[id].visuals.tertiary = { frames: [] };
+                    for (let k = 0; k < grid[0]; k++) {
+                        roomExport.objects[id].visuals.alternate.frames.push({ path: `${path}@frame${k}` });
+                    }
+                }
+            }
             else {
                 roomExport.objects[id].visuals.idle = { frames: [{ path: exts.eastFacing ? `${path}@frame${grid[0] * 3}` : `${path}@frame0` }] };
                 if (exts.idleDir) {
@@ -121,8 +155,8 @@ function getTravisoExport(room) {
         }
         if (sprite.uid === currentProject.libs.traviso.controllable) {
             roomExport.initialControllableLocation = {
-                rowIndex: details.y / 50,
-                columnIndex: details.x / 50,
+                rowIndex: Math.floor(details.y / 50),
+                columnIndex: Math.floor(details.x / 50),
                 controllableId: `${id}`
             };
         }

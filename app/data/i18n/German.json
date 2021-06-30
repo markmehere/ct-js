@@ -444,6 +444,11 @@
         "learnAboutTypes": "Lernen Sie Types zu programmieren",
         "name": "Name:",
         "step": "On Step",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

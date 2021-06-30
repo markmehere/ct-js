@@ -444,6 +444,11 @@
         "learnAboutTypes": "了解编码类型",
         "name": "名称:",
         "step": "同步",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": "显示"
     },
     "rooms": {

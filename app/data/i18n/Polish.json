@@ -356,6 +356,11 @@
         "learnAboutTypes": "Dowiedz się więcej o typach kodowania",
         "name": "Nazwa:",
         "step": "Przy kroku",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

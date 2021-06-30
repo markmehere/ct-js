@@ -347,6 +347,11 @@
         "learnAboutTypes": "Aprenda sobre los tipos de código",
         "name": "Nombre:",
         "step": "En cada paso",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

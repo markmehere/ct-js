@@ -2666,6 +2666,7 @@ var TRAVISO = (function (exports, pixi_js) {
 
 
       EngineView.prototype.getObjectsAtRowAndColumn = function (r, c) {
+        if (!this._objArray[r] || !this._objArray[r][c]) return [];
         return this._objArray[r][c];
       };
       /**
@@ -2681,6 +2682,7 @@ var TRAVISO = (function (exports, pixi_js) {
 
 
       EngineView.prototype.getObjectsAtLocation = function (pos) {
+        if (!this._objArray[pos.r] || !this._objArray[pos.r][pos.c]) return [];
         return this._objArray[pos.r][pos.c];
       };
       /**

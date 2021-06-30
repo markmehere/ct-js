@@ -278,6 +278,11 @@
         "learnAboutTypes": "typeview.learnAboutTypes",
         "name": "typeview.name",
         "step": "typeview.step",
+        "tilemapEvents": "typeview.tilemapEvents",
+        "approach": "typeview.approach",
+        "stopnear": "typeview.stopnear",
+        "collect": "typeview.collect",
+        "reach": "typeview.reach",
         "visible": "typeview.visible"
     },
     "rooms": {

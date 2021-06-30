@@ -347,6 +347,11 @@
         "learnAboutTypes": "Învață despre programarea tipurilor",
         "name": "Nume:",
         "step": "La Fiecare Pas",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

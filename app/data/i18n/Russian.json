@@ -424,6 +424,11 @@
         "learnAboutTypes": "Кодинг типов",
         "name": "Имя:",
         "step": "Кадр",
+        "tilemapEvents": "",
+        "approach": "",
+        "stopnear": "",
+        "collect": "",
+        "reach": "",
         "visible": ""
     },
     "rooms": {

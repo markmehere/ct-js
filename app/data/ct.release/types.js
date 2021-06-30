@@ -90,6 +90,10 @@ const Copy = (function Copy() {
                     onDraw: t.onDraw,
                     onCreate: t.onCreate,
                     onDestroy: t.onDestroy,
+                    onApproach: t.onApproach,
+                    onStopNear: t.onStopNear,
+                    onCollect: t.onCollect,
+                    onReach: t.onReach,
                     shape: ct.res.getTextureShape(t.texture || -1)
                 });
                 if (exts && exts.depth !== void 0) {

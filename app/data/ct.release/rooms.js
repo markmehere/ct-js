@@ -6,6 +6,8 @@
  * @property {Array<Background>} backgrounds
  */
 
+const { Transform } = require("stream");
+
 class Room extends PIXI.Container {
     static getNewId() {
         this.roomId++;
@@ -35,25 +37,9 @@ class Room extends PIXI.Container {
                 ct.pixiApp.renderer.backgroundColor = ct.u.hexToPixi(this.template.backgroundColor);
             }
             /*%beforeroomoncreate%*/
-            if (template.extends.isTilemap) {
-                const instanceConfig = {
-                    mapData: template.traviso,
-                    externalPIXI: true,
-                    highlightPath: false,
-                    highlightTargetTile: true,
-                    initialPositionFrame: {
-                        x: 0,
-                        y: 0,
-                        w: ct.width,
-                        h: ct.height
-                    },
-                    initialZoomLevel: template.zoom - 1,
-                    maxScale: 2
-                };
-                console.log(template.zoom)
-                const TRAVISO = window.TRAVISO;
-                const engine = TRAVISO.getEngineInstance(instanceConfig);
-                this.addChild(engine);
+            if (template.extends.isTilemap && TRAVISO) {
+                ct.traviso = window.prepareTRAVISO(ct, template);
+                this.addChild(ct.traviso);
             } else {
                 for (let i = 0, li = template.bgs.length; i < li; i++) {
                     // Need to put extensions here, so we don't use ct.backgrounds.add
@@ -172,6 +158,7 @@ Room.roomId = 0;
          * @returns {void}
          */
         remove(room) {
+            console.log("remove called");
             if (!(room instanceof Room)) {
                 if (typeof room === 'string') {
                     throw new Error('[ct.rooms] To remove a room, you should provide a reference to it (to an object), not its name. Provided value:', room);
