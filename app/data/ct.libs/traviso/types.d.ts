@@ -31,6 +31,7 @@ declare type TColumnRowPair = {
     public vertices: number[][];
     /**
      * Defines if the map-tile is movable onto by map-objects.
+     * Set through engine using ct.engine.setMovable() update path finding.
      * @property
      * @public
      */
@@ -43,6 +44,7 @@ declare type TColumnRowPair = {
     public mapPos: TColumnRowPair;
 }
 
+declare type FinishApproachCallback = (result: 'suspend' | 'open' | 'close' | 'delete') => void;
 
 /**
  * Visual class for the map-objects.
@@ -54,6 +56,7 @@ declare type TColumnRowPair = {
      
     /**
      * Defines if the map-object is movable onto by other map-objects.
+     * Set through engine using ct.engine.setMovable() update path finding.
      * @property
      * @public
      */
@@ -145,6 +148,29 @@ declare type TColumnRowPair = {
 
 declare namespace ct {
     namespace traviso {
+        /**
+         * Sets the speech bubble for a sprite (one speech bubble at a time).
+         * 
+         * @param text {string} the string to be displayed
+         * @param sprite {ObjectView} the sprite to attach the bubble (if not provided the last sprite or controllable is used)
+         * @param color {string} optional HTML color
+         * @param stroke {string} optional HTML color for stroke
+         */
+        function setSpeech(text: string, sprite?: ObjectView, color?: string, stroke?: string): void;
+
+        /**
+         * Clear the speech bubbles for all sprites.
+         */
+        function clearSpeech(): void;
+
+        /**
+         * Marks an object or tile as movable to and updates path finding
+         * 
+         * @param asset {ObjectView | TileView} the asset to set
+         * @param isMovableTo the value to 
+         */
+        function setMovable(asset: ObjectView | TileView, isMovableTo: boolean): void;
+
         /**
          * Returns the TileView instance that sits in the location given by row and column indices.
          *

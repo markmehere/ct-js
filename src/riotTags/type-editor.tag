@@ -183,7 +183,7 @@ type-editor.panel.view.flexrow
 
                 for (let i = 0; i < allEvents.length; i++) {
                     const firstLine = i < 4 ? 'function ' + allFnNames[i] + '(this: Copy) {' :
-                        'function ' + allFnNames[i] + '(this: ObjectView) {';
+                        'function ' + allFnNames[i] + '(this: ObjectView, finishApproach: FinishApproachCallback) {';
                     this['type' + allEvents[i]] = window.setupCodeEditor(
                         this.refs['type' + allEvents[i]],
                         Object.assign({}, editorOptions, {

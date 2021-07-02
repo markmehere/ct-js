@@ -22,16 +22,16 @@ ct.types.templates["${type.name}"] = {
     onCreate: function () {
         ${type.oncreate}
     },
-    onApproach: function() {
+    onApproach: function(finishApproach) {
         ${type.onapproach || ''}
     },
-    onStopNear: function() {
+    onStopNear: function(finishApproach) {
         ${type.onstopnear || ''}
     },
-    onCollect: function() {
+    onCollect: function(finishApproach) {
         ${type.oncollect || ''}
     },
-    onReach: function() {
+    onReach: function(finishApproach) {
         ${type.onreach || ''}
     },
     extends: ${type.extends ? JSON.stringify(getUnwrappedExtends(type.extends), null, 4) : '{}'}

@@ -6,8 +6,6 @@
  * @property {Array<Background>} backgrounds
  */
 
-const { Transform } = require("stream");
-
 class Room extends PIXI.Container {
     static getNewId() {
         this.roomId++;
@@ -37,7 +35,7 @@ class Room extends PIXI.Container {
                 ct.pixiApp.renderer.backgroundColor = ct.u.hexToPixi(this.template.backgroundColor);
             }
             /*%beforeroomoncreate%*/
-            if (template.extends.isTilemap && TRAVISO) {
+            if (template.extends && template.extends.isTilemap && TRAVISO) {
                 ct.traviso = window.prepareTRAVISO(ct, template);
                 this.addChild(ct.traviso);
             } else {

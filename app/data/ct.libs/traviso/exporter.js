@@ -118,13 +118,13 @@ function getTravisoExport(room) {
                 if (grid[1] > 1) {
                     roomExport.objects[id].visuals.alternate = { frames: [] };
                     for (let k = 0; k < grid[0]; k++) {
-                        roomExport.objects[id].visuals.alternate.frames.push({ path: `${path}@frame${k}` });
+                        roomExport.objects[id].visuals.alternate.frames.push({ path: `${path}@frame${grid[0] + k}` });
                     }
                 }
                 if (grid[1] > 2) {
                     roomExport.objects[id].visuals.tertiary = { frames: [] };
                     for (let k = 0; k < grid[0]; k++) {
-                        roomExport.objects[id].visuals.alternate.frames.push({ path: `${path}@frame${k}` });
+                        roomExport.objects[id].visuals.alternate.frames.push({ path: `${path}@frame${grid[0] * 2 + k}` });
                     }
                 }
             }

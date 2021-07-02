@@ -33,9 +33,10 @@ body {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1.5rem;
-    font-style: italic;
-    padding: 1rem 2rem;
+    font-size: 0.8rem;
+    line-height: 1.2rem;
+    padding: 1rem 1rem;
+    text-align: center;
 }
 .ct-aLoadingBar {
     content: '';
