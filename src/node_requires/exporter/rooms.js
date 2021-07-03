@@ -85,6 +85,7 @@ const stringifyRooms = proj => {
         const safeWidth = (proj.libs && proj.libs.traviso && proj.libs.traviso.viewWidth) || 800;
         const safeHeight = (proj.libs && proj.libs.traviso && proj.libs.traviso.viewHeight) || 600;
         const safeZoom = (proj.libs && proj.libs.traviso && proj.libs.traviso.zoom) || 1;
+        const safeSpeed = (proj.libs && proj.libs.traviso && proj.libs.traviso.defaultSpeed) || 0.5;
 
         roomsCode += `
 ct.rooms.templates['${r.name}'] = {
@@ -92,6 +93,7 @@ ct.rooms.templates['${r.name}'] = {
     width: ${r.extends.isTilemap ? safeWidth : r.width},
     height: ${r.extends.isTilemap ? safeHeight : r.height},
     zoom: ${safeZoom},
+    speed: ${safeSpeed},
     /* JSON.parse allows for a much faster loading of big objects */
     objects: JSON.parse('${JSON.stringify(objs).replace(/\\/g, '\\\\')}'),
     bgs: JSON.parse('${JSON.stringify(bgsCopy).replace(/\\/g, '\\\\')}'),

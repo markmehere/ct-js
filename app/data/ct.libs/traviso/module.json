@@ -38,6 +38,12 @@
             "type": "number",
             "key": "zoom",
             "default": 2
+        },
+        {
+            "name": "Default speed (between 0.01 and 3)",
+            "type": "number",
+            "key": "defaultSpeed",
+            "default": 0.5
         }
     ]
 }

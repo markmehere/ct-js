@@ -7,6 +7,10 @@ declare type TColumnRowPair = {
     r: number;
 };
 
+declare type TStandardVisualIds = 'alternate' | 'dawdle' | 'idle' | 'tertiary' |
+    'special' | 'despecial' | 'idle_sw' | 'idle_nw' | 'idle_ne' | 'idle_se' |
+    'move_sw' | 'move_nw' | 'move_ne' | 'move_se';
+
 /**
  * Visual class for the map-tiles.
  *
@@ -131,15 +135,15 @@ declare type FinishApproachCallback = (result: 'suspend' | 'open' | 'close' | 'd
      * @internal
      *
      * @param vId {string} visual-id
-     * @param stopOnFirstFrame {boolean} if true stops on the first frame after changing the visuals, default `false`
+     * @param stopOnFirstFrame {boolean|number} if true stops on after changing the visuals, if number plays from that frame, if falsy plays from first frame, default `false`
      * @param noLoop {boolean} if true the animation will not loop after the first run, default `false`
      * @param onAnimComplete {Function} callback function to call if 'noLoop' is true after the first run of the animation, default `null`
      * @param animSpeed {number} animation speed for the animated visuals, stays the same if not defined, default `null`
      * @return {boolean} `true` if the visual-id was valid and the visual has changed without errors
      */
     public changeVisual(
-        vId: string,
-        stopOnFirstFrame: boolean,
+        vId: TStandardVisualIds,
+        stopOnFirstFrame: boolean|number,
         noLoop: boolean,
         onAnimComplete: (objectView: ObjectView) => void,
         animSpeed: number

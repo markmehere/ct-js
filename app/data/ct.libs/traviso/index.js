@@ -17,7 +17,8 @@
                 h: ct.height
             },
             initialZoomLevel: template.zoom * multiplier - 1,
-            maxScale: 2,
+            defaultSpeed: template.speed,
+            maxScale: 2
         };
         const TRAVISO = window.TRAVISO;
         const engine = TRAVISO.getEngineInstance(instanceConfig);

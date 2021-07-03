@@ -3,7 +3,7 @@
  * Copyright (c) 2021, Hakan Karlidag - @axaq
  * www.travisojs.com
  *
- * Compiled: Wed, 23 Jun 2021 10:01:03 UTC
+ * Compiled: Sat, 03 Jul 2021 02:02:01 UTC
  *
  * traviso.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -607,7 +607,7 @@ var TRAVISO = (function (exports, pixi_js) {
        * @internal
        *
        * @param vId {string} visual-id
-       * @param stopOnFirstFrame {boolean} if true stops on the first frame after changing the visuals, default `false`
+       * @param stopOnFirstFrame {boolean|number} if true stops on after changing the visuals, if number plays from that frame, if falsy plays from first frame, default `false`
        * @param noLoop {boolean} if true the animation will not loop after the first run, default `false`
        * @param onAnimComplete {Function} callback function to call if 'noLoop' is true after the first run of the animation, default `null`
        * @param animSpeed {number} animation speed for the animated visuals, stays the same if not defined, default `null`
@@ -651,7 +651,7 @@ var TRAVISO = (function (exports, pixi_js) {
 
         this._container.textures = this._textures[vId];
 
-        if (!stopOnFirstFrame && this._textures[vId].length > 1) {
+        if ((!stopOnFirstFrame || typeof stopOnFirstFrame === 'number') && this._textures[vId].length > 1) {
           this._container.loop = !noLoop;
 
           if (noLoop && onAnimComplete) {
@@ -663,7 +663,7 @@ var TRAVISO = (function (exports, pixi_js) {
             this.animSpeed = animSpeed;
           }
 
-          this._container.gotoAndPlay(0);
+          this._container.gotoAndPlay(typeof stopOnFirstFrame === 'number' ? stopOnFirstFrame : 0);
         } else {
           this._container.gotoAndStop(0);
         }
@@ -2505,7 +2505,7 @@ var TRAVISO = (function (exports, pixi_js) {
             this._objArray[i][j] = null;
 
             if (objectsMapData[i][j] && objectsMapData[i][j] !== KEY_NO_OBJECTS) {
-              obj = new ObjectView(this, objectsMapData[i][j]);
+              obj = new ObjectView(this, objectsMapData[i][j], this._config.defaultSpeed);
               obj.position.x = this.getTilePosXFor(i, j);
               obj.position.y = this.getTilePosYFor(i, j) + this.tileHalfHeight;
               obj.mapPos = {
@@ -2699,7 +2699,7 @@ var TRAVISO = (function (exports, pixi_js) {
 
 
       EngineView.prototype.createAndAddObjectToLocation = function (type, pos) {
-        return this.addObjectToLocation(new ObjectView(this, type), pos);
+        return this.addObjectToLocation(new ObjectView(this, type, this._config.defaultSpeed), pos);
       };
       /**
        * Adds an already-created object to the map.
