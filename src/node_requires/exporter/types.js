@@ -19,7 +19,7 @@ ct.types.templates["${type.name}"] = {
     onDestroy: function () {
         ${type.ondestroy}
     },
-    onCreate: function () {
+    onCreate: function (that) {
         ${type.oncreate}
     },
     onApproach: function(finishApproach) {

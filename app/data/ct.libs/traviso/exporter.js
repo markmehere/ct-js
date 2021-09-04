@@ -1,3 +1,14 @@
+function copyCachePath(path, exts) {
+    const rowSpan = parseInt(exts.rowSpan || '1', 10);
+    const colSpan = parseInt(exts.colSpan || '1', 10);
+    const spanPostfix = (rowSpan === 1 && colSpan === 1) ? '' : `-${rowSpan}x${colSpan}`;
+    return `${path}-${(
+        (exts.movable ? 1 : 0) +
+        (exts.interactive ? 2 : 0) +
+        (exts.noTransparency ? 4 : 0)
+    )}-${spanPostfix}`;
+}
+
 function getTravisoExport(room) {
     const roomExport = {
         tiles: {},
@@ -59,15 +70,15 @@ function getTravisoExport(room) {
         for (key of ignoredKeys) {
             delete custom[key];
         }
-        if (copyCache[path]) {
-            id = copyCache[path];
+        if (copyCache[copyCachePath(path, exts)]) {
+            id = copyCache[copyCachePath(path, exts)];
             if (Object.keys(custom).length > 0) {
                 roomExport.custom[`${id};${Math.floor(details.y / 50)};${Math.floor(details.x / 50)}`] = custom;
             }
         }
         else {
             copyCnt++;
-            id = copyCache[path] = copyCnt + tileCnt;
+            id = copyCache[copyCachePath(path, exts)] = copyCnt + tileCnt;
             if (Object.keys(custom).length > 0) {
                 roomExport.custom[`${id};${Math.floor(details.y / 50)};${Math.floor(details.x / 50)}`] = custom;
             }
@@ -77,11 +88,14 @@ function getTravisoExport(room) {
                 rowSpan: parseInt(exts.rowSpan || '1', 10),
                 columnSpan: parseInt(exts.columnSpan || '1', 10),
                 noTransparency: (exts.noTransparency === undefined ? texture.height < 96 : !!exts.noTransparency),
-                floor: !!exts.floor,
+                floor: !!exts.movable,
                 visuals: {},
                 spriteName: sprite.name
             };
-            if (grid[0] === 1 && grid[1] === 1) {
+            if (sprite.extends.visible === false) {
+                roomExport.objects[id].visuals.idle = { frames: [] };
+            }
+            else if (grid[0] === 1 && grid[1] === 1) {
                 roomExport.objects[id].visuals.idle = { frames: [{ path: `${path}@frame0` }] };
             }
             else if (grid[1] === 1) {
@@ -170,6 +184,7 @@ function getTravisoExport(room) {
         roomExport.tileHighlightImage = { path: textures[currentProject.libs.traviso.highlightTile].name + '@frame0' };
     }
 
+    console.log(roomExport);
     return roomExport;
 }
 

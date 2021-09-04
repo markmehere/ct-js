@@ -44,6 +44,12 @@
             "type": "number",
             "key": "defaultSpeed",
             "default": 0.5
+        },
+        {
+            "name": "Map is draggable",
+            "type": "checkbox",
+            "key": "mapDraggable",
+            "default": true
         }
     ]
 }

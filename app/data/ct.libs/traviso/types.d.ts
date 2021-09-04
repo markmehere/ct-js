@@ -143,29 +143,33 @@ declare type FinishApproachCallback = (result: 'suspend' | 'open' | 'close' | 'd
      */
     public changeVisual(
         vId: TStandardVisualIds,
-        stopOnFirstFrame: boolean|number,
-        noLoop: boolean,
-        onAnimComplete: (objectView: ObjectView) => void,
-        animSpeed: number
+        stopOnFirstFrame?: boolean|number,
+        noLoop?: boolean,
+        onAnimComplete?: (objectView: ObjectView) => void,
+        animSpeed?: number
     ): boolean;
 }
 
 declare namespace ct {
     namespace traviso {
+        const speech: any[];
         /**
          * Sets the speech bubble for a sprite (one speech bubble at a time).
          * 
-         * @param text {string} the string to be displayed
+         * @param text {string|Function} the string to be displayed or a callback that will yield said string
          * @param sprite {ObjectView} the sprite to attach the bubble (if not provided the last sprite or controllable is used)
          * @param color {string} optional HTML color
          * @param stroke {string} optional HTML color for stroke
+         * @param index {number} optional almost always zero unless you want multiple bubble on screen
          */
-        function setSpeech(text: string, sprite?: ObjectView, color?: string, stroke?: string): void;
+        function setSpeech(text: string | ((r: number, c: number, ms: number) => string), sprite?: ObjectView, color?: string, stroke?: string, index?: number): void;
 
         /**
          * Clear the speech bubbles for all sprites.
+         * 
+         * @param index {number} optional number of speech bubble otherwise clears all
          */
-        function clearSpeech(): void;
+        function clearSpeech(index?: number): void;
 
         /**
          * Marks an object or tile as movable to and updates path finding
@@ -186,10 +190,6 @@ declare namespace ct {
 
         /**
          * Returns all the ObjectView instances referenced to the given location with the specified row and column indices.
-         *
-         * @method
-         * @function
-         * @public
          *
          * @param r {number} the row index of the map location
          * @param c {number} the column index of the map location
@@ -241,10 +241,6 @@ declare namespace ct {
         /**
          * Removes the object and its references from the map.
          *
-         * @method
-         * @function
-         * @public
-         *
          * @param obj {ObjectView} Either an external display object or a map-object (ObjectView)
          * @param pos {TColumnRowPair} position object including row and column coordinates. If not defined, the engine will use `obj.mapPos` to remove the map-object
          */
@@ -261,10 +257,6 @@ declare namespace ct {
         /**
          * Checks for a path and moves the map-object on map if there is an available path
          *
-         * @method
-         * @function
-         * @public
-         *
          * @param obj {ObjectView} map-object that is being moved
          * @param pos {TColumnRowPair} object including row and column coordinates for the target location
          * @param speed {number} speed of the map-object to be used during movement, if not defined it uses previous speed or the MoveEngine's default speed, default null
@@ -275,18 +267,12 @@ declare namespace ct {
         /**
          * Sets a callback for when any object reaches its destination
          *
-         * @method
-         * @function
-         *
          * @param callback {Function} A function (or null) that will be called when the object reaches its destination - the completing object is the first argument
          */
          function setReachedDestinationCallback(callback: (obj: ObjectView) => void): void;
 
         /**
          * Sets a callback for when any object updates
-         *
-         * @method
-         * @function
          *
          * @param callback {Function} A function (or null) that will be called when the object updates - the updating object is the first argument
          */
@@ -295,15 +281,26 @@ declare namespace ct {
         /**
          * Moves the current controllable map-object to a location if available.
          *
-         * @method
-         * @function
-         * @public
-         *
          * @param pos {TColumnRowPair} object including row and column coordinates for the target location
          * @param speed {number} speed of the map-object to be used during movement, if not defined it uses previous speed or the MoveEngine's default speed, default null
          * @return {boolean} if there is an available path to move to the target tile
          */
          function moveCurrentControllableToLocation(pos: TColumnRowPair, speed?: number): boolean;
+
+        /**
+         * Relocates the current controllable map-object to a location instantly regardless of available paths.
+         *
+         * @param pos {TColumnRowPair} object including row and column coordinates for the target location
+         */
+         function relocateCurrentControllableTo(pos: TColumnRowPair): void;
+
+        /**
+         * Returns the sprite/type name of this object.
+         * 
+         * @param obj {ObjectView} the map-obj to find the sprite/type name
+         * @return {string} the sprite/type name
+         */
+        function getSpriteName(obj: ObjectView): string;
 
         /**
          * Enables mouse/touch interactions.

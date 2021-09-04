@@ -210,6 +210,10 @@ Room.roomId = 0;
                 ct.u.ext(room, exts);
             }
             ct.stage.addChild(room);
+            if (ct.room.isTilemap) {
+                room.scale.x = ct.traviso._posFrame.w / room.template.width;
+                room.scale.y = ct.traviso._posFrame.h / room.template.height;
+            }
             room.onCreate();
             ct.rooms.onCreate.apply(room);
             ct.rooms.list[roomName].push(room);

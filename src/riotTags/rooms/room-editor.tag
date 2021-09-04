@@ -103,6 +103,11 @@ room-editor.panel.view
                         fieldset
                             extensions-editor(entity="{room.extends}" type="room" wide="aye" compact="sure")
 
+                        fieldset(disabled="{room.extends.isTilemap}")
+                            label.block.checkbox
+                                input(type="checkbox" disabled="{room.extends.isTilemap}" checked="{room.extends.isUi}" onchange="{wire('this.room.extends.isUi')}")
+                                b {voc.isUi}
+
                         fieldset(if="{room.extends.isTilemap || global.currentProject.libs.traviso}" disabled="{room.tiles.length !== 1 || room.extends.isUi || room.copies.length || room.tiles[0].tiles.length}")
                             label.block.checkbox
                                 input(type="checkbox" disabled="{room.tiles.length !== 1 || room.extends.isUi || room.copies.length || room.tiles[0].tiles.length}" checked="{room.extends.isTilemap}" onchange="{toggleTilemap}")

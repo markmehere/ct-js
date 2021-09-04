@@ -7,6 +7,7 @@ const stringifyFont = font => `
          url('fonts/${font.origname}') format('truetype');
     font-weight: ${font.weight};
     font-style: ${font.italic ? 'italic' : 'normal'};
+    font-display: block;
 }`;
 const bundleFonts = async function (proj, projdir, writeDir) {
     let css = '',

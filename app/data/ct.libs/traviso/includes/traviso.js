@@ -3,7 +3,7 @@
  * Copyright (c) 2021, Hakan Karlidag - @axaq
  * www.travisojs.com
  *
- * Compiled: Sat, 03 Jul 2021 02:02:01 UTC
+ * Compiled: Sat, 04 Sep 2021 10:16:29 UTC
  *
  * traviso.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -522,7 +522,21 @@ var TRAVISO = (function (exports, pixi_js) {
         _this._textures = info.t;
         _this._interactionOffsets = info.io;
         _this.currentInteractionOffset = _this._interactionOffsets.idle;
-        _this._container = new pixi_js.AnimatedSprite(_this._textures.idle);
+
+        if (_this._textures.idle) {
+          _this._container = new pixi_js.AnimatedSprite(_this._textures.idle);
+        } else {
+          _this._container = new pixi_js.Sprite();
+
+          _this._container.gotoAndStop = function () {
+            return undefined;
+          };
+
+          _this._container.gotoAndPlay = function () {
+            return undefined;
+          };
+        }
+
         _this._container.interactive = _this._container.interactiveChildren = false;
         _this._container.anchor.x = xAnchor;
         _this._container.anchor.y = 1;
@@ -2321,7 +2335,7 @@ var TRAVISO = (function (exports, pixi_js) {
             } // visual = (visual  as MapDataObjectVisualType1);
 
 
-            if (visual.frames && visual.frames.length > 0) {
+            if (visual.frames) {
               oTextures[visualId] = [];
 
               for (m = 0; m < visual.frames.length; m++) {
@@ -4004,13 +4018,15 @@ var TRAVISO = (function (exports, pixi_js) {
 
 
       EngineView.prototype.onMouseUp = function (event) {
+        var draggingMultiplier = window.travisoDistanceToDrag || (window.devicePixelRatio > 1 ? window.devicePixelRatio : 1);
+
         if (this._dragging) {
           this._dragging = false; //const passedTime = (new Date()) - this.mouseDownTime;
 
           var distX = event.data.global.x - this._dragInitStartingX;
           var distY = event.data.global.y - this._dragInitStartingY;
 
-          if (Math.abs(distX) < 5 && Math.abs(distY) < 5) {
+          if (Math.abs(distX) < 5 * draggingMultiplier && Math.abs(distY) < 5 * draggingMultiplier) {
             // NOT DRAGGING IT IS A CLICK
             this.checkForTileClick(event.data);
           }

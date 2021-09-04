@@ -4,9 +4,10 @@
             ct.traviso.resume();
             return ct.traviso;
         }
-        const multiplier = window.devicePixelRatio > 1 ? window.devicePixelRatio * 1.5 : 1
+        let multiplier = window.devicePixelRatio > 1 ? window.devicePixelRatio * 1.5 : 1
+        if (window.travisoExtraZoom > 0.01) multiplier *= window.travisoExtraZoom;
         const instanceConfig = {
-            mapData: template.traviso,
+            mapData: JSON.parse(JSON.stringify(template.traviso)),
             externalPIXI: true,
             highlightPath: false,
             highlightTargetTile: true,
@@ -18,7 +19,8 @@
             },
             initialZoomLevel: template.zoom * multiplier - 1,
             defaultSpeed: template.speed,
-            maxScale: 2
+            mapDraggable: template.mapDraggable,
+            maxScale: 3
         };
         const TRAVISO = window.TRAVISO;
         const engine = TRAVISO.getEngineInstance(instanceConfig);
@@ -37,6 +39,7 @@
         engine.setReachedDestinationCallback = (callback) => {
             engine.reachedDestinationCallback = callback;
         };
+        engine.getSpriteName = (obj) => ct.room.template.traviso.objects[obj.type].spriteName;
         engine.setObjectUpdateCallback = (callback) => {
             engine.objectUpdateCallback = callback;
         };
@@ -50,21 +53,47 @@
             console.log("TRAVISO: Engine resumed");
             engine.moveEngine._ticker.start();
         };
-        engine.setSpeech = (text, sprite, color, stroke) => {
-            engine.speech = {
-                text: text,
-                sprite: sprite || ct.traviso.getCurrentControllable(),
+        engine.relocateCurrentControllableTo = (pos) => {
+            const r = pos.r, c = pos.c;
+            const controllable = engine.getCurrentControllable();
+            engine.removeObjectFromLocation(controllable);
+            engine.addObjectToLocation(controllable, { r, c });
+            engine.setCurrentControllable(controllable);
+            engine.centralizeToLocation(c, r, true);
+        };
+        engine.setSpeech = (text, sprite, color, stroke, index) => {
+            engine.speech = engine.speech || [];
+            const ind = index || 0;
+            engine.speech[ind] = engine.speech[ind] || {
                 color: '#000000',
                 stroke: null
             };
-            if (color && color.length === 4) engine.speech.color = `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`;
-            else if (color && color.length === 7) engine.speech.color = color;
-            if (stroke && stroke.length === 4) engine.speech.stroke = `#${stroke[1]}${stroke[1]}${stroke[2]}${stroke[2]}${stroke[3]}${stroke[3]}`;
-            else if (stroke && stroke.length === 7) engine.speech.stroke = stroke;
+            engine.speech[ind] = {
+                text: (typeof text === 'string') ? text : '',
+                sprite: (sprite || ct.traviso.getCurrentControllable()),
+                bubble: engine.speech[ind].bubble,
+                callback: (typeof text === 'function') ? text : engine.speech[ind].callback,
+                torigin: engine.speech[ind].torigin || Date.now(),
+                color: engine.speech[ind].color,
+                stroke: engine.speech[ind].stroke,
+                justSet: true
+            };
+            if (color && color.length === 4) engine.speech[ind].color = `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`;
+            else if (color && color.length === 7) engine.speech[ind].color = color;
+            if (stroke && stroke.length === 4) engine.speech[ind].stroke = `#${stroke[1]}${stroke[1]}${stroke[2]}${stroke[2]}${stroke[3]}${stroke[3]}`;
+            else if (stroke && stroke.length === 7) engine.speech[ind].stroke = stroke;
         };
-        engine.clearSpeech = () => {
-            engine.speechSprite = null;
-            engine.speechColor = undefined;
+        engine.clearSpeech = (index) => {
+            if (index === undefined) {
+                for (let i = 0; i < engine.speech.length; i++) {
+                    if (engine.speech[i] && engine.speech[i].bubble) engine.parent.removeChild(engine.speech[i].bubble);
+                }
+                engine.speech = null;
+            }
+            else {
+                if (engine.speech[index] && engine.speech[index].bubble) engine.parent.removeChild(engine.speech[index].bubble);
+                engine.speech[index] = null;
+            }
         };
         engine.setMovable = (asset, isMovableTo) => {
             if (asset.verticies) {
@@ -122,6 +151,16 @@
         engine._config.objectUpdateCallback = (obj) => {
             if (template.traviso.initialControllableLocation) {
                 if (obj.type == template.traviso.initialControllableLocation.controllableId) {
+                    if (ct.traviso.speech) {
+                        for (let spind = 0; spind < ct.traviso.speech.length; spind++) {
+                            if (ct.traviso.speech[spind]) {
+                                if (ct.traviso.speech[spind].callback && !ct.traviso.speech[spind].justSet) {
+                                    ct.traviso.speech[spind].text = ct.traviso.speech[spind].callback(obj.mapPos.r, obj.mapPos.c, Date.now() - ct.traviso.speech[spind].torigin) || ct.traviso.speech[spind].text;
+                                }
+                                ct.traviso.speech[spind].justSet = false;
+                            }
+                        }
+                    }
                     for (let r = obj.mapPos.r - 1; r <= obj.mapPos.r + 1; r++) {
                         for (let c = obj.mapPos.c - 1; c <= obj.mapPos.c + 1; c++) {
                             const objs = engine.getObjectsAtLocation({ r, c });

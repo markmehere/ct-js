@@ -86,6 +86,8 @@ const stringifyRooms = proj => {
         const safeHeight = (proj.libs && proj.libs.traviso && proj.libs.traviso.viewHeight) || 600;
         const safeZoom = (proj.libs && proj.libs.traviso && proj.libs.traviso.zoom) || 1;
         const safeSpeed = (proj.libs && proj.libs.traviso && proj.libs.traviso.defaultSpeed) || 0.5;
+        let safeDraggable = proj.libs && proj.libs.traviso && proj.libs.traviso.mapDraggable;
+        if (safeDraggable === undefined) safeDraggable = true;
 
         roomsCode += `
 ct.rooms.templates['${r.name}'] = {
@@ -94,8 +96,9 @@ ct.rooms.templates['${r.name}'] = {
     height: ${r.extends.isTilemap ? safeHeight : r.height},
     zoom: ${safeZoom},
     speed: ${safeSpeed},
+    mapDraggable: ${safeDraggable},
     /* JSON.parse allows for a much faster loading of big objects */
-    objects: JSON.parse('${JSON.stringify(objs).replace(/\\/g, '\\\\')}'),
+    objects: JSON.parse('${JSON.stringify(objs).replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}'),
     bgs: JSON.parse('${JSON.stringify(bgsCopy).replace(/\\/g, '\\\\')}'),
     tiles: JSON.parse('${JSON.stringify(tileLayers).replace(/\\/g, '\\\\')}'),
     backgroundColor: '${r.backgroundColor || '#000000'}',
