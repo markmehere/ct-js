@@ -21,7 +21,7 @@ if (ct.room.template.extends && ct.room.template.extends.isTilemap) {
         };
         const speechBubble = new PIXI.Text(speechObj.text, speechStyle);
         speechBubble.x = speechObj.sprite.transform.worldTransform.tx - speechBubble.getBounds().width / 2;
-        speechBubble.y = speechObj.sprite.transform.worldTransform.ty - 90 * ct.traviso.multiplier - speechBubble.getBounds().height;   
+        speechBubble.y = speechObj.sprite.transform.worldTransform.ty - 100 * Math.min(ct.traviso.multiplier, 2.5) - speechBubble.getBounds().height;   
         speechObj.bubble = speechBubble;
         // I can't work out why adding to ct.pixiApp.stage doesn't work
         ct.traviso.parent.addChild(speechBubble);
@@ -34,7 +34,7 @@ if (ct.room.template.extends && ct.room.template.extends.isTilemap) {
         }
         speechBubble.text = speechObj.text;
         speechBubble.x = speechObj.sprite.transform.worldTransform.tx - speechBubble.getBounds().width / 2;
-        speechBubble.y = speechObj.sprite.transform.worldTransform.ty - 90 * ct.traviso.multiplier - speechBubble.getBounds().height;    
+        speechBubble.y = speechObj.sprite.transform.worldTransform.ty - 100 * Math.min(ct.traviso.multiplier, 2.5) - speechBubble.getBounds().height;    
       }
     }
   }

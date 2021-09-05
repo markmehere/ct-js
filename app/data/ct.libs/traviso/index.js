@@ -68,9 +68,11 @@
                 color: '#000000',
                 stroke: null
             };
+            sprite = sprite || ct.traviso.getCurrentControllable();
+            const emptyText = (typeof text === 'function') ? text(sprite.mapPos.r, sprite.mapPos.c, 0) : '';
             engine.speech[ind] = {
-                text: (typeof text === 'string') ? text : '',
-                sprite: (sprite || ct.traviso.getCurrentControllable()),
+                text: (typeof text === 'string') ? text : emptyText,
+                sprite,
                 bubble: engine.speech[ind].bubble,
                 callback: (typeof text === 'function') ? text : engine.speech[ind].callback,
                 torigin: engine.speech[ind].torigin || Date.now(),
