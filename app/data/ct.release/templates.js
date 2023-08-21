@@ -110,7 +110,7 @@ const Copy = (function Copy() {
                     onDraw: t.onDraw,
                     onCreate: t.onCreate,
                     onDestroy: t.onDestroy,
-                    shape: ct.res.getTextureShape(t.texture || -1)
+                    shape: ct.res.getTextureShape(t.texture || -1, t)
                 });
                 if (exts && exts.depth !== void 0) {
                     this.depth = exts.depth;

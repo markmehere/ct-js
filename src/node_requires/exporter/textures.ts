@@ -28,7 +28,7 @@ type packerBin = {
 
 /* eslint-disable id-blacklist */
 
-const getTextureShape = (texture: ITexture): textureShape => {
+export const getTextureShape = (texture: ITexture): textureShape => {
     if (texture.shape === 'rect') {
         return {
             type: 'rect',
