@@ -28,6 +28,21 @@ const ct = {
     templates: {},
     snd: {},
     stack: [],
+    /**
+     * By default onStep runs once each loop with a ct.delta value provided. If this value is
+     * one onStep run ct.delta times and if greater than one, onStep runs ct.delta times this
+     * multiplier. This allows for advanced collision detection.
+     * @type {number}
+     * @default 0
+     */
+    onStepMultiplier: 0,
+    /**
+     * If onStepMultiplier is positive, this indicates which run of the onStep is executes
+     * This allow you to only fire once even if the onStep is running multiple times in the
+     * loop.
+     * @type {number}
+     */
+    whichOnStep: 0,
     fps: [/*@maxfps@*/][0] || 60,
     /**
      * A measure of how long a frame took time to draw, usually equal to 1 and larger on lags.
@@ -541,9 +556,15 @@ ct.u.ext(ct.u, {// make aliases
         ct.timer.updateTimers();
         /*%beforeframe%*/
         ct.rooms.rootRoomOnStep.apply(ct.room);
+        const storedDelta = ct.delta;
+        const onStepLoops = Math.abs((ct.onStepMultiplier || 1) * (Math.round(ct.delta) || 1));
+        if (ct.onStepMultiplier) ct.delta = 1;
         for (let i = 0, li = ct.stack.length; i < li; i++) {
             ct.templates.beforeStep.apply(ct.stack[i]);
-            ct.stack[i].onStep.apply(ct.stack[i]);
+            for (let j = 0; j < onStepLoops; j++) {
+                ct.whichOnStep = j;
+                ct.stack[i].onStep.apply(ct.stack[i]);
+            }
             ct.templates.afterStep.apply(ct.stack[i]);
         }
         // There may be a number of rooms stacked on top of each other.
@@ -553,9 +574,13 @@ ct.u.ext(ct.u, {// make aliases
                 continue;
             }
             ct.rooms.beforeStep.apply(item);
-            item.onStep.apply(item);
+            for (let j = 0; j < onStepLoops; j++) {
+                ct.whichOnStep = j;
+                item.onStep.apply(item);
+            }
             ct.rooms.afterStep.apply(item);
         }
+        ct.delta = storedDelta;
         // copies
         for (const copy of ct.stack) {
             // eslint-disable-next-line no-underscore-dangle
