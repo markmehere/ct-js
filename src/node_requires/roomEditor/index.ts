@@ -16,7 +16,7 @@ import {IRoomEditorInteraction, AllowedListener, allowedListeners, interactions}
 import {getPixiSwatch} from './../themes';
 import {defaultTextStyle, recolorFilters, eraseCursor, toPrecision, snapToDiagonalGrid, snapToRectangularGrid} from './common';
 import {getTemplateFromId} from '../resources/templates';
-import {ease} from 'node_modules/pixi-ease';
+import {ease, Easing} from 'node_modules/pixi-ease';
 
 
 const roomEditorDefaults = {
@@ -67,6 +67,16 @@ class RoomEditor extends PIXI.Application {
      * in a left-bottom corner. Useful for lining up things in a level.
      */
     pointerCoords = new PIXI.Text('(0;0)', defaultTextStyle);
+    /**
+     * A label that will follow mouse cursor and display entities' relevant names
+     * like template name, used sound asset, etc.
+     */
+    mouseoverHint = new PIXI.Text('Unknown', defaultTextStyle);
+    /**
+     * A reference to the latest moused over entity.
+     * Entities on the map hide the hint only if they were the latest one hovered.
+     */
+    mouseoverHintPrev: unknown;
     /**
      * Whether the room editor currently processes a user interaction.
      * While this is true, no new interactions can be started.
@@ -127,11 +137,17 @@ class RoomEditor extends PIXI.Application {
         this.pointerCoords.x = 8;
         this.stage.addChild(this.pointerCoords);
 
+        this.mouseoverHint.zIndex = Infinity;
+        this.mouseoverHint.visible = false;
+        this.mouseoverHint.anchor.set(0, 1);
+        this.stage.addChild(this.mouseoverHint);
+
         this.ticker.add(() => {
             this.resizeClicktrap();
             this.realignCamera();
             this.snapTarget.update();
             this.repositionCoordLabel();
+            this.repositionMouseoverHint();
             this.tickBackgrounds();
             this.tickCopies();
             if (this.transformer.visible) {
@@ -160,8 +176,11 @@ class RoomEditor extends PIXI.Application {
         // Riot's observable objects lose function's context, so pass an anonymous function instead
         this.updateTexturesHandle = (textureId: string) => this.updateTextures(textureId);
         this.updateCopiesHandle = (templateId: string) => this.updateCopies(templateId);
+        this.cleanupTemplatesHandle = (templateId: string) => this.cleanupTemplates(templateId);
         window.signals.on('pixiTextureChanged', this.updateTexturesHandle);
         window.signals.on('templateChanged', this.updateCopiesHandle);
+        window.signals.on('templatesChanged', this.updateCopiesHandle);
+        window.signals.on('templateRemoved', this.cleanupTemplatesHandle);
     }
     destroy(removeView: boolean, stageOptions: {
         children?: boolean;
@@ -170,6 +189,8 @@ class RoomEditor extends PIXI.Application {
     }): void {
         window.signals.off('pixiTextureChanged', this.updateTexturesHandle);
         window.signals.off('templateChanged', this.updateCopiesHandle);
+        window.signals.off('templatesChanged', this.updateCopiesHandle);
+        window.signals.off('templateRemoved', this.cleanupTemplates);
         super.destroy(removeView, stageOptions);
     }
 
@@ -214,8 +235,13 @@ class RoomEditor extends PIXI.Application {
             this.addBackground(bg);
         }
         for (const copy of room.copies) {
-            const pixiCopy = new Copy(copy, this);
-            this.room.addChild(pixiCopy);
+            try {
+                const pixiCopy = new Copy(copy, this);
+                this.room.addChild(pixiCopy);
+            } catch (e) {
+                console.error(e);
+                window.alertify.error(e.message);
+            }
         }
         for (const tileLayer of room.tiles) {
             this.addTileLayer(tileLayer);
@@ -498,6 +524,25 @@ class RoomEditor extends PIXI.Application {
     repositionCoordLabel(): void {
         this.pointerCoords.y = this.screen.height - 30;
     }
+    repositionMouseoverHint(): void {
+        if (!this.mouseoverHint.visible) {
+            return;
+        }
+        const {mouse} = this.renderer.plugins.interaction;
+        this.mouseoverHint.x = mouse.global.x + 8;
+        this.mouseoverHint.y = mouse.global.y;
+    }
+
+    updateMouseoverHint(text: string, newRef: unknown): void {
+        this.mouseoverHint.text = text;
+        this.mouseoverHintPrev = newRef;
+        this.mouseoverHint.visible = true;
+    }
+    mouseoverOut(ref: unknown): void {
+        if (this.mouseoverHintPrev === ref) {
+            this.mouseoverHint.visible = false;
+        }
+    }
 
     updateTextures(textureId: string): void {
         for (const child of this.room.children) {
@@ -525,8 +570,26 @@ class RoomEditor extends PIXI.Application {
             }
         }
     }
+    cleanupTemplates(templateId: string): void {
+        console.warn('cleanup for', templateId);
+        let cleaned = false;
+        for (const child of this.room.children) {
+            if (child instanceof Copy) {
+                if (child.templateId === templateId) {
+                    cleaned = true;
+                    child.destroy();
+                }
+            }
+        }
+        if (cleaned) {
+            this.history.stack.length = 0; // invalidate history
+            this.currentSelection.clear();
+            this.riotEditor.update();
+        }
+    }
     updateTexturesHandle: (textureId: string) => void;
     updateCopiesHandle: (templateId: string) => void;
+    cleanupTemplatesHandle: (templateId: string) => void;
 
     #simulate: boolean;
     get simulate(): boolean {
@@ -637,9 +700,14 @@ class RoomEditor extends PIXI.Application {
             this.riotEditor.refs.zoomLabel.innerHTML = `${Math.round(this.getZoom())}%`;
         });
     }
-    zoomTo(zoom: number): void {
+    /**
+     * @param {Number} zoom Zoom value, in percents
+     */
+    zoomTo(zoom: number): Easing {
+        // @see https://github.com/ct-js/ct-js/issues/407
+        zoom = Math.min(8_000, Math.max(zoom, 1)); // Clamp zoom to avoid flickering
         const scale = 1 / zoom * 100;
-        ease.add(this.camera, {
+        return ease.add(this.camera, {
             scale
         }, {
             duration: 500
