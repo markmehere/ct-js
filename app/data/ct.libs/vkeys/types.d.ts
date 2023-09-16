@@ -12,8 +12,6 @@ interface IVkeysButtonOptions {
     texHover?: string | -1;
     /** The texture for a pressed state. If not provided, it will use `texNormal` instead. */
     texActive?: string | -1;
-    /** The scale of the button. Defaults to 1 in both directions. */
-    scale?: number | ISimplePoint;
     /** The alpha of the button. Defaults to 1 (fully opaque). */
     alpha?: number;
     /** A number that position a button in the room. If a function is provided, it will update the position every frame. */
@@ -35,8 +33,6 @@ interface IVkeysJoystickOptions {
     key: VKeysJoystickCode;
     /** The texture for the trackpad. Its collision shape is used to calculate joystick's values and to position the trackball. */
     tex: string | -1;
-    /** The scale of the button. Defaults to 1 in both directions. */
-    scale?: number | ISimplePoint;
     /** The alpha of the button. Defaults to 1 (fully opaque). */
     alpha?: number;
     /** The texture for the trackball. */

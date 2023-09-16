@@ -50,8 +50,6 @@
         onCreate: function () {
             this.tex = this.opts.texNormal;
             this.depth = this.opts.depth;
-            this.scale.x = typeof(this.opts.scale) === 'object' ? this.opts.scale.x : this.opts.scale;
-            this.scale.y = typeof(this.opts.scale) === 'object' ? this.opts.scale.y : this.opts.scale;
             this.alpha = this.opts.alpha;
         }
     };
@@ -60,8 +58,6 @@
         onCreate: function () {
             this.tex = this.opts.tex;
             this.depth = this.opts.depth;
-            this.scale.x = typeof(this.opts.scale) === 'object' ? this.opts.scale.x : this.opts.scale;
-            this.scale.y = typeof(this.opts.scale) === 'object' ? this.opts.scale.y : this.opts.scale;
             this.alpha = this.opts.alpha;
             this.down = false;
             this.trackball = new PIXI.Sprite(ct.res.getTexture(this.opts.trackballTex, 0));
