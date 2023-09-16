@@ -212,8 +212,11 @@
                     music: sound.isMusic
                 });
             }
-            
-            if (typeof(externalLoader) === 'function') loadingPromises.push(externalLoader());
+
+            /* eslint-disable no-undef */
+            if (typeof externalLoader === 'function') {
+                loadingPromises.push(externalLoader());
+            }
 
             /*@res@*/
             /*%res%*/

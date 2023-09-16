@@ -142,7 +142,7 @@ const pixiAppSettings = {
     powerPreference: 'high-performance',
     sharedTicker: false,
     sharedLoader: true,
-    transparent: [/*@transparent@*/][0],
+    transparent: [/*@transparent@*/][0]
 };
 try {
     /**
@@ -559,7 +559,9 @@ ct.u.ext(ct.u, {// make aliases
         ct.rooms.rootRoomOnStep.apply(ct.room);
         const storedDelta = ct.delta;
         const onStepLoops = Math.abs((ct.onStepMultiplier || 1) * (Math.round(ct.delta) || 1));
-        if (ct.onStepMultiplier) ct.delta = 1;
+        if (ct.onStepMultiplier) {
+            ct.delta = 1;
+        }
         for (let i = 0, li = ct.stack.length; i < li; i++) {
             ct.templates.beforeStep.apply(ct.stack[i]);
             for (let j = 0; j < onStepLoops; j++) {
