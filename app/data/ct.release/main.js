@@ -28,6 +28,29 @@ const ct = {
     templates: {},
     snd: {},
     stack: [],
+    /**
+     * A calculated value representing the number of times of onStep will be called in this
+     * render.
+     * @type {number}
+     * @default 1
+     */
+    onStepLoops: 1,
+    /**
+     * By default onStep runs once each render with a ct.delta value provided. If this value is
+     * one, onStep runs ct.delta times each render and if greater than one, onStep runs ct.delta
+     * times this multiplier. This can be helpful for small object collision in high-speed action
+     * games.
+     * @type {number}
+     * @default 0
+     */
+    onStepMultiplier: 0,
+    /**
+     * If onStepMultiplier is positive, this indicates which iteration of onStep is executing.
+     * This allows you to only fire only once (e.g. when whichOnStep is zero) even if the onStep
+     * is running multiple times this render.
+     * @type {number}
+     */
+    whichOnStep: 0,
     fps: [/*@maxfps@*/][0] || 60,
     /**
      * A measure of how long a frame took time to draw, usually equal to 1 and larger on lags.
@@ -535,6 +558,7 @@ ct.u.ext(ct.u, {// make aliases
         }
     };
 
+    // eslint-disable-next-line complexity
     ct.loop = function loop() {
         ct.delta = ct.pixiApp.ticker.deltaMS / (1000 / (ct.pixiApp.ticker.maxFPS || 60));
         ct.deltaUi = ct.pixiApp.ticker.elapsedMS / (1000 / (ct.pixiApp.ticker.maxFPS || 60));
@@ -542,21 +566,54 @@ ct.u.ext(ct.u, {// make aliases
         ct.timer.updateTimers();
         /*%beforeframe%*/
         ct.rooms.rootRoomOnStep.apply(ct.room);
+        const storedDelta = ct.delta;
+        ct.onStepLoops = ct.onStepMultiplier ? Math.round(ct.onStepMultiplier * ct.delta) || 1 : 1;
+        ct.delta = ct.onStepMultiplier ? 1 : ct.delta;
+        const rooms = ct.stage.children.filter(item => item instanceof Room);
+
+        // items
         for (let i = 0, li = ct.stack.length; i < li; i++) {
+            ct.whichOnStep = 0;
             ct.templates.beforeStep.apply(ct.stack[i]);
             ct.stack[i].onStep.apply(ct.stack[i]);
-            ct.templates.afterStep.apply(ct.stack[i]);
-        }
-        // There may be a number of rooms stacked on top of each other.
-        // Loop through them and filter out everything that is not a room.
-        for (const item of ct.stage.children) {
-            if (!(item instanceof Room)) {
-                continue;
+            if (ct.onStepLoops <= 1) {
+                ct.templates.afterStep.apply(ct.stack[i]);
             }
+        }
+
+        // rooms
+        for (const item of rooms) {
             ct.rooms.beforeStep.apply(item);
             item.onStep.apply(item);
-            ct.rooms.afterStep.apply(item);
+            if (ct.onStepLoops <= 1) {
+                ct.rooms.afterStep.apply(item);
+            }
         }
+
+        if (ct.onStepLoops > 1) {
+            for (let j = 1; j < ct.onStepLoops; j++) {
+                const lastLoop = j + 1 >= ct.onStepLoops;
+                ct.whichOnStep = j;
+
+                // items again
+                for (let i = 0, li = ct.stack.length; i < li; i++) {
+                    ct.stack[i].onStep.apply(ct.stack[i]);
+                    if (lastLoop) {
+                        ct.templates.afterStep.apply(ct.stack[i]);
+                    }
+                }
+
+                // rooms again
+                for (const item of rooms) {
+                    item.onStep.apply(item);
+                    if (lastLoop) {
+                        ct.rooms.afterStep.apply(item);
+                    }
+                }
+            }
+        }
+
+        ct.delta = storedDelta;
         // copies
         for (const copy of ct.stack) {
             // eslint-disable-next-line no-underscore-dangle
